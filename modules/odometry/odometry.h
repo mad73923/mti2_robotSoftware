@@ -10,8 +10,12 @@
 
 #include "TLE5012B.h"
 
-void odometry_init(void);
+typedef struct{
+	int16_t angleWheel_l;
+}odo_angles;
 
+void odometry_init(void);
+odo_angles odometry_getAngles(void);
 
 
 #endif /* ODOMETRY_ODOMETRY_H_ */

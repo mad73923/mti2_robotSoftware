@@ -44,13 +44,6 @@ void SPI_init(void){
 	LL_GPIO_SetPinSpeed(GPIOB, LL_GPIO_PIN_5, LL_GPIO_SPEED_FREQ_VERY_HIGH);
 	LL_GPIO_SetPinPull(GPIOB, LL_GPIO_PIN_5, LL_GPIO_PULL_DOWN);
 
-	/* Configure NSS Pin connected to pin PA15 */
-	LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_15, LL_GPIO_MODE_OUTPUT);
-	//LL_GPIO_SetAFPin_8_15(GPIOA, LL_GPIO_PIN_15, LL_GPIO_AF_5);
-	//LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_15, LL_GPIO_MODE_ALTERNATE);
-	LL_GPIO_SetPinSpeed(GPIOA, LL_GPIO_PIN_15, LL_GPIO_SPEED_FREQ_VERY_HIGH);
-	LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_15);
-
 	/* (2) Configure NVIC for SPI1 transfer complete/error interrupts **********/
 	/* Set priority for SPI1_IRQn */
 	NVIC_SetPriority(SPI1_IRQn, 0);
@@ -90,14 +83,17 @@ void SPI_communicate_sync(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pdataRX
 	nbIndexReceive = 0;
 	nbIndexTransmit = 0;
 
+	LL_SPI_EnableIT_TXE(SPI1);
 	LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
 	LL_SPI_Enable(SPI1);
 	while(nbIndexTransmit<nbDataToTransmit);
 	while(LL_SPI_IsActiveFlag_BSY(SPI1));
-	SPI_cleanRXBuffer();
+
 
 	LL_SPI_Disable(SPI1);
 	LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_RX);
+	SPI_cleanRXBuffer();
+	LL_SPI_EnableIT_RXNE(SPI1);
 	LL_SPI_Enable(SPI1);
 
 	while(nbIndexReceive<nbDataToReceive);
@@ -111,12 +107,15 @@ void SPI_communicate_sync(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pdataRX
 void SPI_cleanRXBuffer(void){
 	while(LL_SPI_IsActiveFlag_RXNE(SPI1))
 		LL_SPI_ReceiveData16(SPI1);
+	nbIndexReceive = 0;
 }
 
 void SPI1_Tx_Callback(void){
 	if(nbIndexTransmit<nbDataToTransmit){
 		LL_SPI_TransmitData16(SPI1, dataTX[nbIndexTransmit]);
 		nbIndexTransmit++;
+	}else{
+		LL_SPI_DisableIT_TXE(SPI1);
 	}
 }
 
@@ -124,6 +123,8 @@ void SPI1_Rx_Callback(void){
 	if(nbIndexReceive<nbDataToReceive){
 		dataRX[nbIndexReceive] = LL_SPI_ReceiveData16(SPI1);
 		nbIndexReceive++;
+	}else{
+		LL_SPI_DisableIT_RXNE(SPI1);
 	}
 }
 
