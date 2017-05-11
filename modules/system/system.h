@@ -10,6 +10,8 @@
 
 #include "stm32l4xx_ll_bus.h"
 #include "stm32l4xx_ll_rcc.h"
+#include "stm32l4xx_ll_utils.h"
+#include "stm32l4xx_ll_system.h"
 
 void system_init(void);
 
