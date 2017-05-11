@@ -10,6 +10,6 @@
 
 #include "../modules/system/system.h"
 
-
+#include "../modules/odometry/odometry.h"
 
 #endif /* MAIN_H_ */
