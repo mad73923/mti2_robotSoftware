@@ -12,6 +12,19 @@
 #include "stm32l4xx_ll_gpio.h"
 #include "stm32l4xx_ll_bus.h"
 
+/*
+ * Hardware CS (Chip Select)
+ * Managed by this Module, NOT SPI!
+ */
+
+#define TLE5012B_CS_EnableGPIOClock_L() LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOA)
+#define TLE5012B_CS_PORT_L	GPIOA
+#define TLE5012B_CS_PIN_L	LL_GPIO_PIN_15
+
+/*
+ * Registers
+ */
+
 #define TLE5012B_RW_POS			15
 #define TLE5012B_RW_READ		0x01
 #define TLE5012B_RW_WRITE		0x00

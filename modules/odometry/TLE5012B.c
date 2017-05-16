@@ -69,17 +69,17 @@ float sensor_getAngle(TLE5012B_ACT_t side){
  * @brief	This function configures the CS pins.
  */
 void CS_init(void){
-	LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOA);
-	LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_15, LL_GPIO_MODE_OUTPUT);
-	LL_GPIO_SetPinSpeed(GPIOA, LL_GPIO_PIN_15, LL_GPIO_SPEED_FREQ_VERY_HIGH);
-	LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_15);
+	TLE5012B_CS_EnableGPIOClock_L();
+	LL_GPIO_SetPinMode(TLE5012B_CS_PORT_L, TLE5012B_CS_PIN_L, LL_GPIO_MODE_OUTPUT);
+	LL_GPIO_SetPinSpeed(TLE5012B_CS_PORT_L, TLE5012B_CS_PIN_L, LL_GPIO_SPEED_FREQ_VERY_HIGH);
+	LL_GPIO_SetOutputPin(TLE5012B_CS_PORT_L, TLE5012B_CS_PIN_L);
 }
 
 void CS_activateLeft(void){
-	LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_15);
+	LL_GPIO_ResetOutputPin(TLE5012B_CS_PORT_L, TLE5012B_CS_PIN_L);
 }
 
 void CS_resetAll(void){
-	LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_15);
+	LL_GPIO_SetOutputPin(TLE5012B_CS_PORT_L, TLE5012B_CS_PIN_L);
 	//TODO right side
 }
