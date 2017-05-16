@@ -11,7 +11,7 @@
 #include "TLE5012B.h"
 
 typedef struct{
-	int16_t angleWheel_l;
+	float angleWheel_l;
 }odo_angles;
 
 void odometry_init(void);

@@ -13,6 +13,6 @@ void odometry_init(void){
 
 odo_angles odometry_getAngles(void){
 	odo_angles ret;
-	ret.angleWheel_l = sensor_readRegister(AVAL, TLE_LEFT);
+	ret.angleWheel_l = sensor_getAngle(TLE_LEFT);
 	return ret;
 }
