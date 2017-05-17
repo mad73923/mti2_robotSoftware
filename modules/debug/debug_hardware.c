@@ -33,16 +33,16 @@ void debug_hardware_init(void){
 
 void uart_send(uint8_t* buffer, uint32_t length){
 	transmissionComplete = 0;
-	LL_DMA_ConfigAddresses(DMA1, LL_DMA_CHANNEL_7,
+	LL_DMA_ConfigAddresses(DEBUG_UART_TX_DMA_INST, DEBUG_UART_TX_DMA_CH,
 	                         (uint32_t)buffer,
-	                         LL_USART_DMA_GetRegAddr(USART2, LL_USART_DMA_REG_DATA_TRANSMIT),
-	                         LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_7));
-	LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_7, length);
+	                         LL_USART_DMA_GetRegAddr(DEBUG_UART_INST, LL_USART_DMA_REG_DATA_TRANSMIT),
+	                         LL_DMA_GetDataTransferDirection(DEBUG_UART_TX_DMA_INST, DEBUG_UART_TX_DMA_CH));
+	LL_DMA_SetDataLength(DEBUG_UART_TX_DMA_INST, DEBUG_UART_TX_DMA_CH, length);
 
 	/* Enable DMA TX Interrupt */
-	LL_USART_EnableDMAReq_TX(USART2);
+	LL_USART_EnableDMAReq_TX(DEBUG_UART_INST);
 	/* Enable DMA Channel Tx */
-	LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_7);
+	LL_DMA_EnableChannel(DEBUG_UART_TX_DMA_INST, DEBUG_UART_TX_DMA_CH);
 
 }
 
@@ -58,7 +58,7 @@ void uart_waitTransmissionComplete(void){
 /**
   * @brief  This function configures the DMA Channels for TX and RX transfers
   * @note   This function is used to :
-  *         -1- Enable DMA1 clock
+  *         -1- Enable DEBUG_UART_TX_DMA_INST clock
   *         -2- Configure NVIC for DMA transfer complete/error interrupts
   *         -3- Configure DMA TX channel functional parameters
   *         -4- Configure DMA RX channel functional parameters
@@ -67,19 +67,19 @@ void uart_waitTransmissionComplete(void){
   * @retval None
   */
 void Configure_DMA(void){
-  /* DMA1 used for USART2 Transmission and Reception
+  /* DEBUG_UART_TX_DMA_INST used for DEBUG_UART_INST Transmission and Reception
    */
-  /* (1) Enable the clock of DMA1 */
-  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
+  /* (1) Enable the clock of DEBUG_UART_TX_DMA_INST */
+	DEBUG_UART_DMA_CLK_INIT();
 
   /* (2) Configure NVIC for DMA transfer complete/error interrupts */
-  NVIC_SetPriority(DMA1_Channel7_IRQn, 0);
-  NVIC_EnableIRQ(DMA1_Channel7_IRQn);
+  NVIC_SetPriority(DEBUG_UART_TX_DMA_IRQn, DEBUG_UART_TX_DMA_PRIO);
+  NVIC_EnableIRQ(DEBUG_UART_TX_DMA_IRQn);
 //  NVIC_SetPriority(DMA1_Channel6_IRQn, 0);
 //  NVIC_EnableIRQ(DMA1_Channel6_IRQn);
 
   /* (3) Configure the DMA functional parameters for transmission */
-  LL_DMA_ConfigTransfer(DMA1, LL_DMA_CHANNEL_7,
+  LL_DMA_ConfigTransfer(DEBUG_UART_TX_DMA_INST, DEBUG_UART_TX_DMA_CH,
                         LL_DMA_DIRECTION_MEMORY_TO_PERIPH |
                         LL_DMA_PRIORITY_HIGH              |
                         LL_DMA_MODE_NORMAL                |
@@ -88,7 +88,7 @@ void Configure_DMA(void){
                         LL_DMA_PDATAALIGN_BYTE            |
                         LL_DMA_MDATAALIGN_BYTE);
 
-  LL_DMA_SetPeriphRequest(DMA1, LL_DMA_CHANNEL_7, LL_DMA_REQUEST_2);
+  LL_DMA_SetPeriphRequest(DEBUG_UART_TX_DMA_INST, DEBUG_UART_TX_DMA_CH, DEBUG_UART_TX_DMA_REQ);
 
   /* (4) Configure the DMA functional parameters for reception */
 //  LL_DMA_ConfigTransfer(DMA1, LL_DMA_CHANNEL_6,
@@ -100,15 +100,15 @@ void Configure_DMA(void){
 //                        LL_DMA_PDATAALIGN_BYTE            |
 //                        LL_DMA_MDATAALIGN_BYTE);
 //  LL_DMA_ConfigAddresses(DMA1, LL_DMA_CHANNEL_6,
-//                         LL_USART_DMA_GetRegAddr(USART2, LL_USART_DMA_REG_DATA_RECEIVE),
+//                         LL_USART_DMA_GetRegAddr(DEBUG_UART_INST, LL_USART_DMA_REG_DATA_RECEIVE),
 //                         (uint32_t)aRxBuffer,
 //                         LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_6));
 //  LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_6, ubNbDataToReceive);
 //  LL_DMA_SetPeriphRequest(DMA1, LL_DMA_CHANNEL_6, LL_DMA_REQUEST_2);
 
   /* (5) Enable DMA transfer complete/error interrupts  */
-  LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_7);
-  LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_7);
+  LL_DMA_EnableIT_TC(DEBUG_UART_TX_DMA_INST, DEBUG_UART_TX_DMA_CH);
+  LL_DMA_EnableIT_TE(DEBUG_UART_TX_DMA_INST, DEBUG_UART_TX_DMA_CH);
 //  LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_6);
 //  LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_6);
 }
@@ -116,10 +116,10 @@ void Configure_DMA(void){
 /**
   * @brief  This function configures USARTx Instance.
   * @note   This function is used to :
-  *         -1- Enable GPIO clock and configures the USART2 pins.
-  *         -2- Enable the USART2 peripheral clock and clock source.
-  *         -3- Configure USART2 functional parameters.
-  *         -4- Enable USART2.
+  *         -1- Enable GPIO clock and configures the DEBUG_UART_INST pins.
+  *         -2- Enable the DEBUG_UART_INST peripheral clock and clock source.
+  *         -3- Configure DEBUG_UART_INST functional parameters.
+  *         -4- Enable DEBUG_UART_INST.
   * @note   Peripheral configuration is minimal configuration from reset values.
   *         Thus, some useless LL unitary functions calls below are provided as
   *         commented examples - setting is default configuration from reset.
@@ -131,14 +131,14 @@ void Configure_USART(void){
   /* (1) Enable GPIO clock and configures the USART pins **********************/
 
   /* Enable the peripheral clock of GPIO Port */
-  LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOA);
+	DEBUG_UART_GPIO_CLK_INIT();
 
   /* Configure Tx Pin as : Alternate function, High Speed, Push pull, Pull up */
-  LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_2, LL_GPIO_MODE_ALTERNATE);
-  LL_GPIO_SetAFPin_0_7(GPIOA, LL_GPIO_PIN_2, LL_GPIO_AF_7);
-  LL_GPIO_SetPinSpeed(GPIOA, LL_GPIO_PIN_2, LL_GPIO_SPEED_FREQ_VERY_HIGH);
-  LL_GPIO_SetPinOutputType(GPIOA, LL_GPIO_PIN_2, LL_GPIO_OUTPUT_PUSHPULL);
-  LL_GPIO_SetPinPull(GPIOA, LL_GPIO_PIN_2, LL_GPIO_PULL_UP);
+  LL_GPIO_SetPinMode(DEBUG_UART_TX_GPIO_PORT, DEBUG_UART_TX_GPIO_PIN, LL_GPIO_MODE_ALTERNATE);
+  LL_GPIO_SetAFPin_0_7(DEBUG_UART_TX_GPIO_PORT, DEBUG_UART_TX_GPIO_PIN, LL_GPIO_AF_7);
+  LL_GPIO_SetPinSpeed(DEBUG_UART_TX_GPIO_PORT, DEBUG_UART_TX_GPIO_PIN, LL_GPIO_SPEED_FREQ_VERY_HIGH);
+  LL_GPIO_SetPinOutputType(DEBUG_UART_TX_GPIO_PORT, DEBUG_UART_TX_GPIO_PIN, LL_GPIO_OUTPUT_PUSHPULL);
+  LL_GPIO_SetPinPull(DEBUG_UART_TX_GPIO_PORT, DEBUG_UART_TX_GPIO_PIN, LL_GPIO_PULL_UP);
 
   /* Configure Rx Pin as : Alternate function, High Speed, Push pull, Pull up */
   LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_3, LL_GPIO_MODE_ALTERNATE);
@@ -147,31 +147,31 @@ void Configure_USART(void){
   LL_GPIO_SetPinOutputType(GPIOA, LL_GPIO_PIN_3, LL_GPIO_OUTPUT_PUSHPULL);
   LL_GPIO_SetPinPull(GPIOA, LL_GPIO_PIN_3, LL_GPIO_PULL_UP);
 
-  /* (2) Enable USART2 peripheral clock and clock source ****************/
-  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART2);
+  /* (2) Enable DEBUG_UART_INST peripheral clock and clock source ****************/
+  DEBUG_UART_CLK_EN();
 
   /* Set clock source */
-  LL_RCC_SetUSARTClockSource(LL_RCC_USART2_CLKSOURCE_PCLK1);
+  LL_RCC_SetUSARTClockSource(DEBUG_UART_CLK_SRC);
 
-  /* (3) Configure USART2 functional parameters ********************************/
+  /* (3) Configure DEBUG_UART_INST functional parameters ********************************/
 
   /* Disable USART prior modifying configuration registers */
   /* Note: Commented as corresponding to Reset value */
-  // LL_USART_Disable(USART2);
+  // LL_USART_Disable(DEBUG_UART_INST);
 
   /* TX/RX direction */
-  LL_USART_SetTransferDirection(USART2, LL_USART_DIRECTION_TX_RX);
+  LL_USART_SetTransferDirection(DEBUG_UART_INST, LL_USART_DIRECTION_TX_RX);
 
   /* 8 data bit, 1 start bit, 1 stop bit, no parity */
-  LL_USART_ConfigCharacter(USART2, LL_USART_DATAWIDTH_8B, LL_USART_PARITY_NONE, LL_USART_STOPBITS_1);
+  LL_USART_ConfigCharacter(DEBUG_UART_INST, LL_USART_DATAWIDTH_8B, LL_USART_PARITY_NONE, LL_USART_STOPBITS_1);
 
   /* No Hardware Flow control */
   /* Reset value is LL_USART_HWCONTROL_NONE */
-  // LL_USART_SetHWFlowCtrl(USART2, LL_USART_HWCONTROL_NONE);
+  // LL_USART_SetHWFlowCtrl(DEBUG_UART_INST, LL_USART_HWCONTROL_NONE);
 
   /* Oversampling by 16 */
   /* Reset value is LL_USART_OVERSAMPLING_16 */
-  // LL_USART_SetOverSampling(USART2, LL_USART_OVERSAMPLING_16);
+  // LL_USART_SetOverSampling(DEBUG_UART_INST, LL_USART_OVERSAMPLING_16);
 
   /* Set Baudrate to 115200 using APB frequency set to 80000000 Hz */
   /* Frequency available for USART peripheral can also be calculated through LL RCC macro */
@@ -180,13 +180,13 @@ void Configure_USART(void){
 
       In this example, Peripheral Clock is expected to be equal to 80000000 Hz => equal to SystemCoreClock
   */
-  LL_USART_SetBaudRate(USART2, SystemCoreClock, LL_USART_OVERSAMPLING_16, 115200);
+  LL_USART_SetBaudRate(DEBUG_UART_INST, SystemCoreClock, LL_USART_OVERSAMPLING_16, 115200);
 
-  /* (4) Enable USART2 **********************************************************/
-  LL_USART_Enable(USART2);
+  /* (4) Enable DEBUG_UART_INST **********************************************************/
+  LL_USART_Enable(DEBUG_UART_INST);
 
   /* Polling USART initialisation */
-  while((!(LL_USART_IsActiveFlag_TEACK(USART2))) || (!(LL_USART_IsActiveFlag_REACK(USART2))))
+  while((!(LL_USART_IsActiveFlag_TEACK(DEBUG_UART_INST))) || (!(LL_USART_IsActiveFlag_REACK(DEBUG_UART_INST))))
   {
   }
 }
@@ -196,21 +196,21 @@ void Configure_USART(void){
  */
 
 /**
-  * @brief  This function handles DMA1 interrupt request.
+  * @brief  This function handles DEBUG_UART_TX_DMA_INST interrupt request.
   * @param  None
   * @retval None
   */
-void DMA1_Channel7_IRQHandler(void)
+void DEBUG_UART_TX_DMA_HANDLER()
 {
 
-  if(LL_DMA_IsActiveFlag_TC7(DMA1))
+  if(LL_DMA_IsActiveFlag_TC7(DEBUG_UART_TX_DMA_INST))
   {
-    LL_DMA_ClearFlag_GI7(DMA1);
+    LL_DMA_ClearFlag_GI7(DEBUG_UART_TX_DMA_INST);
     transmissionComplete = 1;
-    /* Disable DMA1 Tx Channel */
-    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_7);
+    /* Disable DEBUG_UART_TX_DMA_INST Tx Channel */
+    LL_DMA_DisableChannel(DEBUG_UART_TX_DMA_INST, DEBUG_UART_TX_DMA_CH);
   }
-  else if(LL_DMA_IsActiveFlag_TE7(DMA1))
+  else if(LL_DMA_IsActiveFlag_TE7(DEBUG_UART_TX_DMA_INST))
   {
     /* Call Error function */
     //USART_TransferError_Callback();

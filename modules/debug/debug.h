@@ -13,6 +13,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#define DEBUG_BUFFERSIZE	300
+
 void debug_init(void);
 void debug_printf(const char* format, ...);
 

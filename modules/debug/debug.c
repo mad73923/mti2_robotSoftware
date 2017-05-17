@@ -11,7 +11,7 @@
  * Variables
  */
 
-uint8_t txBuffer[300];
+uint8_t txBuffer[DEBUG_BUFFERSIZE];
 
 /*
  * Private functions prototypes
@@ -33,7 +33,7 @@ void debug_printf(const char* format, ...){
 	va_end(args);
 
 	uint32_t length = 0;
-	while(txBuffer[length] != 0){
+	while(txBuffer[length] != 0 && length<DEBUG_BUFFERSIZE-2){
 		length++;
 	}
 
