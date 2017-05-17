@@ -75,8 +75,6 @@ void Configure_DMA(void){
   /* (2) Configure NVIC for DMA transfer complete/error interrupts */
   NVIC_SetPriority(DEBUG_UART_TX_DMA_IRQn, DEBUG_UART_TX_DMA_PRIO);
   NVIC_EnableIRQ(DEBUG_UART_TX_DMA_IRQn);
-//  NVIC_SetPriority(DMA1_Channel6_IRQn, 0);
-//  NVIC_EnableIRQ(DMA1_Channel6_IRQn);
 
   /* (3) Configure the DMA functional parameters for transmission */
   LL_DMA_ConfigTransfer(DEBUG_UART_TX_DMA_INST, DEBUG_UART_TX_DMA_CH,
@@ -90,27 +88,9 @@ void Configure_DMA(void){
 
   LL_DMA_SetPeriphRequest(DEBUG_UART_TX_DMA_INST, DEBUG_UART_TX_DMA_CH, DEBUG_UART_TX_DMA_REQ);
 
-  /* (4) Configure the DMA functional parameters for reception */
-//  LL_DMA_ConfigTransfer(DMA1, LL_DMA_CHANNEL_6,
-//                        LL_DMA_DIRECTION_PERIPH_TO_MEMORY |
-//                        LL_DMA_PRIORITY_HIGH              |
-//                        LL_DMA_MODE_NORMAL                |
-//                        LL_DMA_PERIPH_NOINCREMENT         |
-//                        LL_DMA_MEMORY_INCREMENT           |
-//                        LL_DMA_PDATAALIGN_BYTE            |
-//                        LL_DMA_MDATAALIGN_BYTE);
-//  LL_DMA_ConfigAddresses(DMA1, LL_DMA_CHANNEL_6,
-//                         LL_USART_DMA_GetRegAddr(DEBUG_UART_INST, LL_USART_DMA_REG_DATA_RECEIVE),
-//                         (uint32_t)aRxBuffer,
-//                         LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_6));
-//  LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_6, ubNbDataToReceive);
-//  LL_DMA_SetPeriphRequest(DMA1, LL_DMA_CHANNEL_6, LL_DMA_REQUEST_2);
-
   /* (5) Enable DMA transfer complete/error interrupts  */
   LL_DMA_EnableIT_TC(DEBUG_UART_TX_DMA_INST, DEBUG_UART_TX_DMA_CH);
   LL_DMA_EnableIT_TE(DEBUG_UART_TX_DMA_INST, DEBUG_UART_TX_DMA_CH);
-//  LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_6);
-//  LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_6);
 }
 
 /**
@@ -139,13 +119,6 @@ void Configure_USART(void){
   LL_GPIO_SetPinSpeed(DEBUG_UART_TX_GPIO_PORT, DEBUG_UART_TX_GPIO_PIN, LL_GPIO_SPEED_FREQ_VERY_HIGH);
   LL_GPIO_SetPinOutputType(DEBUG_UART_TX_GPIO_PORT, DEBUG_UART_TX_GPIO_PIN, LL_GPIO_OUTPUT_PUSHPULL);
   LL_GPIO_SetPinPull(DEBUG_UART_TX_GPIO_PORT, DEBUG_UART_TX_GPIO_PIN, LL_GPIO_PULL_UP);
-
-  /* Configure Rx Pin as : Alternate function, High Speed, Push pull, Pull up */
-  LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_3, LL_GPIO_MODE_ALTERNATE);
-  LL_GPIO_SetAFPin_0_7(GPIOA, LL_GPIO_PIN_3, LL_GPIO_AF_7);
-  LL_GPIO_SetPinSpeed(GPIOA, LL_GPIO_PIN_3, LL_GPIO_SPEED_FREQ_VERY_HIGH);
-  LL_GPIO_SetPinOutputType(GPIOA, LL_GPIO_PIN_3, LL_GPIO_OUTPUT_PUSHPULL);
-  LL_GPIO_SetPinPull(GPIOA, LL_GPIO_PIN_3, LL_GPIO_PULL_UP);
 
   /* (2) Enable DEBUG_UART_INST peripheral clock and clock source ****************/
   DEBUG_UART_CLK_EN();
