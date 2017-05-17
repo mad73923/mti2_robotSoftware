@@ -69,5 +69,6 @@ typedef enum{
 
 void sensor_init(void);
 uint16_t sensor_readRegister(TLE5012B_REG_t reg, TLE5012B_ACT_t side);
+float sensor_getAngle(TLE5012B_ACT_t side);
 
 #endif /* ODOMETRY_TLE5012B_H_ */
