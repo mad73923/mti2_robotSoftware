@@ -9,7 +9,8 @@
 #define ENV_SENSOR_ADC_TIMER_H_
 
 
+#include "stm32l4xx_ll_tim.h"
 
-
+void adc_timer_init(void);
 
 #endif /* ENV_SENSOR_ADC_TIMER_H_ */
