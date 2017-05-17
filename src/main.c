@@ -9,6 +9,7 @@
 
 int main(void){
 	system_init();
+	debug_init();
 
 	odometry_init();
 

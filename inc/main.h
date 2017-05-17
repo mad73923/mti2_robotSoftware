@@ -9,6 +9,7 @@
 #define MAIN_H_
 
 #include "../modules/system/system.h"
+#include "../modules/debug/debug.h"
 
 #include "../modules/odometry/odometry.h"
 
