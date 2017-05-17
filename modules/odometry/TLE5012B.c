@@ -55,7 +55,7 @@ float sensor_getAngle(TLE5012B_ACT_t side){
 	int16_t val = sensor_readRegister(AVAL, side);
 	val &= 0b0111111111111111;
 	if(val & 0b0100000000000000){
-		val = 0b1000000000000000+(val&0b0011111111111111);
+		val = 0b1100000000000000+(val&0b0011111111111111);
 	}
 	float ret = (360.0*val)/32768.0;
 	return ret;
