@@ -8,7 +8,11 @@
 #ifndef WLAN_ESP8266_H_
 #define WLAN_ESP8266_H_
 
+#include "uart.h"
 
+void ESP8266init();
+
+void ESP8266createAP(const char* SSID,const char* PW);
 
 
 

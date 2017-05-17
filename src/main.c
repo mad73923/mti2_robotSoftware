@@ -9,4 +9,6 @@
 
 int main(void){
 	system_init();
+	WLANinit();
+	WLANcreateAP("Robot1","PWstinkt");
 }
