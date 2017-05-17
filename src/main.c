@@ -16,6 +16,7 @@ int main(void){
 	volatile odo_angles ang;
 	while(1){
 		ang = odometry_getAngles();
+		debug_printf("angle: %f\n", ang.angleWheel_l);
 		LL_mDelay(500);
 	}
 }
