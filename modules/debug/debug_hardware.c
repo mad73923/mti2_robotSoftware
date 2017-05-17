@@ -133,7 +133,7 @@ void Configure_USART(void){
   // LL_USART_Disable(DEBUG_UART_INST);
 
   /* TX/RX direction */
-  LL_USART_SetTransferDirection(DEBUG_UART_INST, LL_USART_DIRECTION_TX_RX);
+  LL_USART_SetTransferDirection(DEBUG_UART_INST, LL_USART_DIRECTION_TX);
 
   /* 8 data bit, 1 start bit, 1 stop bit, no parity */
   LL_USART_ConfigCharacter(DEBUG_UART_INST, LL_USART_DATAWIDTH_8B, LL_USART_PARITY_NONE, LL_USART_STOPBITS_1);
@@ -159,7 +159,7 @@ void Configure_USART(void){
   LL_USART_Enable(DEBUG_UART_INST);
 
   /* Polling USART initialisation */
-  while((!(LL_USART_IsActiveFlag_TEACK(DEBUG_UART_INST))) || (!(LL_USART_IsActiveFlag_REACK(DEBUG_UART_INST))))
+  while(!(LL_USART_IsActiveFlag_TEACK(DEBUG_UART_INST)))
   {
   }
 }
