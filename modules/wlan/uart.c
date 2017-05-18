@@ -16,11 +16,11 @@ uint8_t UARTwaitForOkOrError(uint32_t cyclesTimeout);
 
 
 uint8_t TxLength;
-char TxBuffer[50];
+char TxBuffer[80];
 volatile uint8_t TransmissionComplete;
 volatile uint8_t TransmissionError;
 
-char RxBuffer[50] = "";
+char RxBuffer[200] = "";
 volatile uint8_t Lines = 0; //wir ind ISR um 1 erhöht bei jedem \n = 0A
 
 
@@ -145,17 +145,22 @@ void UARTwaitEndOfTransfer(void)
  * return 2: "Timeout wurde erreicht*/
 uint8_t UARTwaitForOkOrError(uint32_t cyclesTimeout){
 	for(int i=0; i<cyclesTimeout; i++){
-		if(Lines&&strstr(RxBuffer,"OK")!=NULL){
+		if(strstr(RxBuffer,"OK")){
+			debug_printf("OK recieved\n\r");
 			memset(RxBuffer,0,sizeof(RxBuffer));
 			Lines = 0;
 			return 0;
 		}
-		else if (Lines&&strstr(RxBuffer,"ERROR")!=NULL){
+		if(strstr(RxBuffer,"ERROR")){
+			debug_printf("ERROR recieved\n\r");
 			memset(RxBuffer,0,sizeof(RxBuffer));
 			Lines = 0;
 			return 1;
 		}
 	}
+	debug_printf("timeout\n\r");
+	memset(RxBuffer,0,sizeof(RxBuffer));
+	Lines = 0;
 	return 2;
 }
 
@@ -198,8 +203,9 @@ void USART3_IRQHandler(void){
 
 void USART3_RecieveCallback(void){
 	char recieved = LL_USART_ReceiveData8(USART3);
-	strcat(RxBuffer,&recieved);
+	strncat(RxBuffer,&recieved,1);
 	if(recieved=='\n'){
 		Lines++;
+		//debug_printf("%s",RxBuffer);
 	}
 }

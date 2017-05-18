@@ -1,0 +1,22 @@
+/*
+ * main.h
+ *
+ *  Created on: 10.05.2017
+ *      Author: matthias
+ */
+
+#ifndef MAIN_H_
+#define MAIN_H_
+
+#include "../modules/system/system.h"
+<<<<<<< HEAD
+#include "../modules/wlan/wlan.h"
+
+||||||| merged common ancestors
+
+=======
+#include "../modules/debug/debug.h"
+>>>>>>> master
+
+
+#endif /* MAIN_H_ */
