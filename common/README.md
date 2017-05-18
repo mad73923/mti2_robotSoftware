@@ -9,7 +9,8 @@ Before sending a mergerequest check following points:
 	2. Module
 	3. (additional abstraction layer)
 	4. Low level drivers (includes STM32L4xx.h)
-- In 4th layer: no direct instantiation of hardware in C files. Use `#defines` in Header file instead ([example](debug/debug_hardware.h#L21)). This is makes hardware changes more flexible and the C file is unchanged.
+- In 4th layer: no direct instantiation of hardware in C files. Use `#defines` in Header file instead (for example see modules/debug/debug_hardware.h line 21 ++). This is makes hardware changes more flexible and the C file is unchanged.
+- Add folder with used datasheets into your datasheet folder (module/TheModule/datasheets)
 
 ### Optional
 
