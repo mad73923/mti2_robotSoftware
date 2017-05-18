@@ -12,7 +12,7 @@
 
 void ESP8266init();
 
-void ESP8266createAP(const char* SSID,const char* PW);
+uint8_t ESP8266createAP(const char* SSID,const char* PW);
 
 
 

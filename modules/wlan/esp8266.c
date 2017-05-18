@@ -11,22 +11,24 @@ void ESP8266init(){
 	UARTinit();
 }
 
-void ESP8266createAP(const char* SSID,const char* PW){
+uint8_t ESP8266createAP(const char* SSID,const char* PW){
+char buffer[30];
 
-	///* Initiate DMA transfers */
-	// //Modus = Soft AP
-	// StartTransfers("AT+CWMODE_CUR=2\r\n");
-	// WaitAndCheckEndOfTransfer();
-	//
-	// //LL_mDelay(100);
-	//
-	// WaitForUserButtonPress();
-	//
-	// StartTransfers("AT+CWSAP_CUR=\"Robot1\",\"1234567890\",5,3\r\n");
-	//
-	// /* Wait for the end of the transfer and check received data */
-	// WaitAndCheckEndOfTransfer();
-
-
+	//Set Mode to Soft AP
+	UARTStartTransfers("AT+CWMODE_CUR=2\r\n");
+	UARTwaitEndOfTransfer();
+	if(UARTwaitForOkOrError(10000000)!=0){
+		return 1;
+	}
+	strcpy(buffer,"AT+CWSAP_CUR=\"");
+	strcat(buffer,SSID);
+	strcat(buffer,"\",\"");
+	strcat(buffer,PW);
+	strcat(buffer,"\",5,3\r\n");
+	UARTStartTransfers(buffer);
+	if(UARTwaitForOkOrError(10000000)!=0){
+			return 1;
+	}
+	return 0;
 }
 

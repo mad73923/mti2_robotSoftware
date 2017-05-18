@@ -13,8 +13,12 @@
 #include "stm32l4xx_ll_gpio.h"
 #include "stm32l4xx_ll_usart.h"
 #include "stm32l4xx_ll_dma.h"
+#include <string.h>
 
-void UARTinit();
+void UARTinit(void);
+void UARTStartTransfers(const char* Command);
+void UARTwaitEndOfTransfer(void);
+uint8_t UARTwaitForOkOrError(uint32_t cyclesTimeout);
 
 
 

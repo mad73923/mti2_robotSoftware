@@ -9,11 +9,19 @@
 
 void DMA1_TransmitComplete_Callback(void);
 void USART_TransferError_Callback(void);
+void USART3_RecieveCallback(void);
+void UARTStartTransfers(const char* Command);
+void UARTwaitEndOfTransfer(void);
+uint8_t UARTwaitForOkOrError(uint32_t cyclesTimeout);
+
 
 uint8_t TxLength;
-uint8_t TxBuffer[50];
+char TxBuffer[50];
 volatile uint8_t TransmissionComplete;
 volatile uint8_t TransmissionError;
+
+char RxBuffer[50] = "";
+volatile uint8_t Lines = 0; //wir ind ISR um 1 erhöht bei jedem \n = 0A
 
 
 void UARTinit(){
@@ -105,6 +113,51 @@ void UARTinit(){
 	NVIC_EnableIRQ(USART3_IRQn);
 }
 
+void UARTStartTransfers(const char* Command)
+{
+	TransmissionComplete = 0;
+	strcpy(TxBuffer, Command);
+	TxLength = strlen(TxBuffer);
+	LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_2, TxLength);
+
+	/* Enable DMA TX Interrupt */
+	LL_USART_EnableDMAReq_TX(USART3);
+
+	/* Enable DMA Channel Tx */
+	LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2);
+}
+
+
+void UARTwaitEndOfTransfer(void)
+{
+  /* 1 - Wait end of transmission */
+  while (TransmissionComplete != 1)
+  {
+  }
+  /* Disable DMA1 Tx Channel */
+  LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+}
+
+
+/* wartet auf ein "OK" vom ESP8266 oder ein "ERROR" und liefert einen Zahlenwert zurück:
+ * return 0: "OK" wurde empfangen
+ * return 1: "Error" wurde empfangen
+ * return 2: "Timeout wurde erreicht*/
+uint8_t UARTwaitForOkOrError(uint32_t cyclesTimeout){
+	for(int i=0; i<cyclesTimeout; i++){
+		if(Lines&&strstr(RxBuffer,"OK")!=NULL){
+			memset(RxBuffer,0,sizeof(RxBuffer));
+			Lines = 0;
+			return 0;
+		}
+		else if (Lines&&strstr(RxBuffer,"ERROR")!=NULL){
+			memset(RxBuffer,0,sizeof(RxBuffer));
+			Lines = 0;
+			return 1;
+		}
+	}
+	return 2;
+}
 
 
 void DMA1_Channel2_IRQHandler(void)
@@ -123,6 +176,7 @@ void DMA1_Channel2_IRQHandler(void)
   }
 }
 
+
 void DMA1_TransmitComplete_Callback(void)
 {
   //DMA Tx transfer completed
@@ -133,5 +187,19 @@ void USART_TransferError_Callback(void)
 {
   /* Disable DMA1 Tx Channel */
   LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+}
 
+void USART3_IRQHandler(void){
+
+	if(LL_USART_IsActiveFlag_RXNE(USART3)){
+		USART3_RecieveCallback();
+	}
+}
+
+void USART3_RecieveCallback(void){
+	char recieved = LL_USART_ReceiveData8(USART3);
+	strcat(RxBuffer,&recieved);
+	if(recieved=='\n'){
+		Lines++;
+	}
 }

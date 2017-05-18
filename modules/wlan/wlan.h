@@ -13,7 +13,7 @@
 void WLANinit();
 
 
-void WLANcreateAP(const char* SSID,const char* PW);
+uint8_t WLANcreateAP(const char* SSID,const char* PW);
 
 
 #endif /* WLAN_WLAN_H_ */

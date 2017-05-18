@@ -11,6 +11,6 @@ void WLANinit(){
 	ESP8266init();
 }
 
-void WLANcreateAP(const char* SSID,const char* PW){
-	ESP8266createAP(SSID,PW);
+uint8_t WLANcreateAP(const char* SSID,const char* PW){
+	return ESP8266createAP(SSID,PW);
 }
