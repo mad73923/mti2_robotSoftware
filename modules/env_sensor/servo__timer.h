@@ -15,12 +15,7 @@
 
 #include "stm32l4xx_ll_tim.h"
 #include "stm32l4xx_ll_bus.h"
-//#include "stm32l4xx_ll_rcc.h"
-//#include "stm32l4xx_ll_pwr.h"
-//#include "stm32l4xx_ll_system.h"
-//#include "stm32l4xx_ll_utils.h"
 #include "stm32l4xx_ll_gpio.h"
-//#include "stm32l4xx_ll_exti.h"
 
 void servo_timer_init(void);
 

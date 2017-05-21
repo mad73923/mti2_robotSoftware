@@ -19,16 +19,18 @@
 void servo_timer_init(void){
 
   /* Enable GPIO-CLK for PORTC */
-  LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOC);
+  MOTOR_GPIO_CLK_ENABLEC();
 
   /* GPIO TIM8_CH2 configuration */
-  LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_7, LL_GPIO_MODE_ALTERNATE);
-  LL_GPIO_SetPinPull(GPIOC, LL_GPIO_PIN_7, LL_GPIO_PULL_DOWN);
-  LL_GPIO_SetPinSpeed(GPIOC, LL_GPIO_PIN_7, LL_GPIO_SPEED_FREQ_HIGH);
-  LL_GPIO_SetAFPin_0_7(GPIOC, LL_GPIO_PIN_7, LL_GPIO_AF_3);
+  LL_GPIO_SetPinMode(MOTORSERVO_PORT, MOTORSERVO_PWM_PIN, LL_GPIO_MODE_ALTERNATE);
+  LL_GPIO_SetPinPull(MOTORSERVO_PORT, MOTORSERVO_PWM_PIN, LL_GPIO_PULL_DOWN);
+  LL_GPIO_SetPinSpeed(MOTORSERVO_PORT, MOTORSERVO_PWM_PIN, LL_GPIO_SPEED_FREQ_HIGH);
+  LL_GPIO_SetAFPin_0_7(MOTORSERVO_PORT, MOTORSERVO_PWM_PIN, LL_GPIO_AF_3);
+
   /******************************/
   /* Peripheral clocks enabling */
   /******************************/
+
   /* Enable the timer peripheral clock */
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM8);
 
