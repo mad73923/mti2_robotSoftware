@@ -20,6 +20,10 @@ void UARTinit(void);
 void UARTStartTransfers(const char* Command);
 void UARTwaitEndOfTransfer(void);
 uint8_t UARTwaitForOkOrError(uint32_t cyclesTimeout);
+uint8_t UARTcheckForNewConnection(void);
+uint8_t UARTwaitForStartIndicator(uint32_t cyclesTimeout);
+uint8_t UARTwaitForSendOK(uint32_t cyclesTimeout);
+uint8_t UARTwaitForReady(uint32_t cyclesTimeout);
 
 
 

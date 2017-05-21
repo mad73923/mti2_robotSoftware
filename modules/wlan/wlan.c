@@ -18,3 +18,7 @@ uint8_t WLANcreateAP(const char* SSID,const char* PW,const char* IP){
 uint8_t WLANstartServer(const char* Port){
 	return ESP8266startServer(Port);
 }
+
+uint8_t WLANhandleConnections(void){
+	return ESP8266handleConnections();
+}

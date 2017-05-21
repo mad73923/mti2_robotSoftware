@@ -16,11 +16,12 @@ uint8_t UARTwaitForOkOrError(uint32_t cyclesTimeout);
 
 
 uint8_t TxLength;
-char TxBuffer[80];
+char TxBuffer[500];
 volatile uint8_t TransmissionComplete;
 volatile uint8_t TransmissionError;
 
-char RxBuffer[200] = "";
+char RxBuffer[1000] = "";
+volatile uint16_t Characters = 0;
 volatile uint8_t Lines = 0; //wir ind ISR um 1 erhöht bei jedem \n = 0A
 
 
@@ -146,24 +147,97 @@ void UARTwaitEndOfTransfer(void)
 uint8_t UARTwaitForOkOrError(uint32_t cyclesTimeout){
 	for(int i=0; i<cyclesTimeout; i++){
 		if(strstr(RxBuffer,"OK")){
-			debug_printf("OK recieved\n\r");
+			//debug_printf("OK recieved\n\r");
 			memset(RxBuffer,0,sizeof(RxBuffer));
 			Lines = 0;
+			Characters = 0;
 			return 0;
 		}
 		if(strstr(RxBuffer,"ERROR")){
 			debug_printf("ERROR recieved\n\r");
 			memset(RxBuffer,0,sizeof(RxBuffer));
 			Lines = 0;
+			Characters = 0;
 			return 1;
 		}
 	}
 	debug_printf("timeout\n\r");
 	memset(RxBuffer,0,sizeof(RxBuffer));
 	Lines = 0;
+	Characters = 0;
 	return 2;
 }
 
+uint8_t UARTcheckForNewConnection(void){
+	uint8_t clientnr = 10;
+	char *ptr = strstr(RxBuffer,"CONNECT");
+	if(ptr){
+		ptr = ptr-2;
+		clientnr = *ptr - '0';
+		memset(RxBuffer,0,sizeof(RxBuffer));
+		Characters = 0;
+		Lines = 0;
+		}
+	return clientnr;
+}
+
+uint8_t UARTwaitForStartIndicator(uint32_t cyclesTimeout){
+for(int i=0; i<cyclesTimeout; i++){
+		if(strstr(RxBuffer,">")){
+			//debug_printf("OK recieved\n\r");
+			memset(RxBuffer,0,sizeof(RxBuffer));
+			Lines = 0;
+			Characters = 0;
+			return 0;
+		}
+	}
+	debug_printf("timeout\n\r");
+	memset(RxBuffer,0,sizeof(RxBuffer));
+	Lines = 0;
+	Characters = 0;
+	return 2;
+}
+
+uint8_t UARTwaitForReady(uint32_t cyclesTimeout){
+for(int i=0; i<cyclesTimeout; i++){
+		if(strstr(RxBuffer,"ready")){
+			//debug_printf("OK recieved\n\r");
+			memset(RxBuffer,0,sizeof(RxBuffer));
+			Lines = 0;
+			Characters = 0;
+			return 0;
+		}
+	}
+	debug_printf("timeout\n\r");
+	memset(RxBuffer,0,sizeof(RxBuffer));
+	Lines = 0;
+	Characters = 0;
+	return 2;
+}
+
+uint8_t UARTwaitForSendOK(uint32_t cyclesTimeout){
+for(int i=0; i<cyclesTimeout; i++){
+		if(strstr(RxBuffer,"SEND OK")){
+			//debug_printf("OK recieved\n\r");
+			memset(RxBuffer,0,sizeof(RxBuffer));
+			Lines = 0;
+			Characters = 0;
+			return 0;
+		}
+		if(strstr(RxBuffer,"FAILED")){
+			debug_printf("Failed recieved\n\r");
+			memset(RxBuffer,0,sizeof(RxBuffer));
+			Lines = 0;
+			Characters = 0;
+			return 1;
+		}
+	}
+	debug_printf("timeout\n\r");
+	memset(RxBuffer,0,sizeof(RxBuffer));
+	Lines = 0;
+	Characters = 0;
+	return 2;
+}
 
 void DMA1_Channel2_IRQHandler(void)
 {
@@ -202,10 +276,14 @@ void USART3_IRQHandler(void){
 }
 
 void USART3_RecieveCallback(void){
-	char recieved = LL_USART_ReceiveData8(USART3);
-	strncat(RxBuffer,&recieved,1);
-	if(recieved=='\n'){
-		Lines++;
-		//debug_printf("%s",RxBuffer);
+	if(Characters<=999){
+		char recieved = LL_USART_ReceiveData8(USART3);
+		Characters++;
+		strncat(RxBuffer,&recieved,1);
+		if(recieved=='\n'){
+			Lines++;
+			//debug_printf("%s",RxBuffer);
+		}
 	}
+
 }
