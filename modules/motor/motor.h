@@ -16,5 +16,5 @@ int setDirection(char cMotor,char cDir);
 int setSpeedDir(char cMotor, char cDir, int iSpeed);
 int stop(char cMotor);
 
-
+//
 #endif /* MOTOR_MOTOR_H_ */

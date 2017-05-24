@@ -11,7 +11,7 @@
   * 		will be configured. I dunno the times by now, cuz I'm too lazy...later...
   * @param  None
   * @retval None
-  */
+  *///
 void motor_timer_init(void){
 
 	/* Enable the MotorLeft/MotorRight_GPÌO_Clock */
