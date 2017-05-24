@@ -33,5 +33,7 @@ void uart_waitTransmissionComplete(void);
 #define DEBUG_UART_TX_GPIO_PORT		GPIOA
 #define DEBUG_UART_TX_GPIO_PIN		LL_GPIO_PIN_2
 #define DEBUG_UART_GPIO_CLK_INIT()	LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOA)
+#define DEBUG_UART_TX_AF			LL_GPIO_AF_7
+#define DEBUG_UART_SET_AF			LL_GPIO_SetAFPin_0_7
 
 #endif /* DEBUG_DEBUG_HARDWARE_H_ */

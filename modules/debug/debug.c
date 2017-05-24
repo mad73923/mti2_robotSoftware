@@ -29,6 +29,9 @@ void debug_init(void){
 void debug_printf(const char* format, ...){
 	va_list args;
 	va_start(args, format);
+
+	uart_waitTransmissionComplete();
+
 	vsprintf(txBuffer, format, args);
 	va_end(args);
 
@@ -37,6 +40,5 @@ void debug_printf(const char* format, ...){
 		length++;
 	}
 
-	uart_waitTransmissionComplete();
 	uart_send(txBuffer, length);
 }
