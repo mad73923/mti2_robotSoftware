@@ -7,9 +7,9 @@
 
 #include "uart.h"
 
-void DMA1_TransmitComplete_Callback(void);
+void DMA_TransmitComplete_Callback(void);
 void USART_TransferError_Callback(void);
-void USART3_RecieveCallback(void);
+void USART_RecieveCallback(void);
 void UARTStartTransfers(const char* Command);
 void UARTwaitEndOfTransfer(void);
 uint8_t UARTwaitForOkOrError(uint32_t cyclesTimeout);
@@ -109,9 +109,9 @@ void UARTinit(){
 	/*
 	 * Rx-Interrupt Config
 	 */
-	NVIC_SetPriority(USART3_IRQn, 2);
+	NVIC_SetPriority(WLAN_UART_IRQn, WLAN_UART_RX_PRIO);
 	LL_USART_EnableIT_RXNE(WLAN_UART_INST);
-	NVIC_EnableIRQ(USART3_IRQn);
+	NVIC_EnableIRQ(WLAN_UART_IRQn);
 }
 
 void UARTStartTransfers(const char* Command)
@@ -242,13 +242,13 @@ for(int i=0; i<cyclesTimeout; i++){
 void WLAN_UART_TX_DMA_HANDLER()
 {
 
-  if(LL_DMA_IsActiveFlag_TC2(WLAN_UART_TX_DMA_INST))
+  if(WLAN_UART_TX_DMA_CompleteFlag())
   {
-    LL_DMA_ClearFlag_GI2(WLAN_UART_TX_DMA_INST);
+	  WLAN_UART_TX_DMA_ClearFlag();
     /* Call function Transmission complete Callback */
-    DMA1_TransmitComplete_Callback();
+    DMA_TransmitComplete_Callback();
   }
-  else if(LL_DMA_IsActiveFlag_TE2(WLAN_UART_TX_DMA_INST))
+  else if(WLAN_UART_TX_DMA_ErrorFlag())
   {
     /* Call Error function */
     USART_TransferError_Callback();
@@ -256,7 +256,7 @@ void WLAN_UART_TX_DMA_HANDLER()
 }
 
 
-void DMA1_TransmitComplete_Callback(void)
+void DMA_TransmitComplete_Callback(void)
 {
   //DMA Tx transfer completed
   TransmissionComplete = 1;
@@ -271,11 +271,11 @@ void USART_TransferError_Callback(void)
 void USART3_IRQHandler(void){
 
 	if(LL_USART_IsActiveFlag_RXNE(WLAN_UART_INST)){
-		USART3_RecieveCallback();
+		USART_RecieveCallback();
 	}
 }
 
-void USART3_RecieveCallback(void){
+void USART_RecieveCallback(void){
 	if(Characters<=999){
 		char recieved = LL_USART_ReceiveData8(WLAN_UART_INST);
 		Characters++;

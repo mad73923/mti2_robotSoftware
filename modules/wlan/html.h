@@ -17,6 +17,7 @@ char webpage[500]= "<!DOCTYPE html>\
 <body bgcolor=\"#330000\" text=\"#FFFFFF\">\
 <h1> Das ist aber ein toller Robot!</h1>\
 <p>Der tut nix - will nur spielen...</p>\
+<button type=\"button\">Click Me!</button> \
 </body>\
 </html>";
 

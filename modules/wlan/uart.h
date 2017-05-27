@@ -41,6 +41,8 @@ uint8_t UARTwaitForReady(uint32_t cyclesTimeout);
 #define WLAN_UART_INST				USART3
 #define WLAN_UART_CLK_ENABLE()		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART3)
 #define WLAN_UART_CLK_SRC			LL_RCC_USART3_CLKSOURCE_PCLK1
+#define WLAN_UART_IRQn				USART3_IRQn
+#define WLAN_UART_RX_PRIO			10
 //DMA
 #define WLAN_UART_DMA_CLK_INIT()	LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1)
 #define WLAN_UART_TX_DMA_INST		DMA1
@@ -49,4 +51,7 @@ uint8_t UARTwaitForReady(uint32_t cyclesTimeout);
 #define WLAN_UART_TX_DMA_IRQn		DMA1_Channel2_IRQn
 #define WLAN_UART_TX_DMA_PRIO		10
 #define WLAN_UART_TX_DMA_HANDLER()	DMA1_Channel2_IRQHandler()
+#define WLAN_UART_TX_DMA_CompleteFlag()	LL_DMA_IsActiveFlag_TC2(WLAN_UART_TX_DMA_INST)
+#define WLAN_UART_TX_DMA_ClearFlag()	LL_DMA_ClearFlag_GI2(WLAN_UART_TX_DMA_INST)
+#define WLAN_UART_TX_DMA_ErrorFlag()	LL_DMA_IsActiveFlag_TE2(WLAN_UART_TX_DMA_INST)
 #endif /* WLAN_UART_H_ */

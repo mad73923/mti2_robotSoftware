@@ -88,7 +88,6 @@ uint8_t ESP8266startServer(const char* Port){
 
 uint8_t ESP8266handleConnections(void){
 	uint8_t returnval = -1;
-	char clientchar;
 	uint8_t client = UARTcheckForNewConnection();
 	if(client<=3){
 		debug_printf("Incoming Connection from client %d\n\r", client);
