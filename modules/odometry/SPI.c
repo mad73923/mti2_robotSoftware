@@ -19,9 +19,9 @@ volatile uint32_t nbIndexReceive;
  * Private function prototypes
  */
 
-void SPI1_Tx_Callback();
-void SPI1_Rx_Callback();
-void SPI_cleanRXBuffer();
+void SPI1_Tx_Callback(void);
+void SPI1_Rx_Callback(void);
+void SPI_cleanRXBuffer(void);
 
 /*
  * Public functions
@@ -98,6 +98,10 @@ void SPI_communicate_sync(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pdataRX
 
 	while(nbIndexReceive<nbDataToReceive);
 	LL_SPI_Disable(SPI1);
+}
+
+void SPI_waitForClearance(void){
+	while(LL_SPI_IsActiveFlag_BSY(SPI1));
 }
 
 /*

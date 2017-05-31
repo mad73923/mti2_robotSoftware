@@ -15,5 +15,6 @@
 void SPI_init(void);
 
 void SPI_communicate_sync(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pdataRX, uint32_t ndataRX);
+void SPI_waitForClearance(void);
 
 #endif /* ODOMETRY_SPI_H_ */

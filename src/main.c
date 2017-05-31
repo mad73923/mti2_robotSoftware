@@ -7,16 +7,20 @@
 
 #include "main.h"
 
+static volatile odo_angles ang;
+static volatile odo_revs revs;
+
 int main(void){
 	system_init();
 	debug_init();
 
 	odometry_init();
 
-	volatile odo_angles ang;
 	while(1){
+		revs = odometry_getRevolutions();
 		ang = odometry_getAngles();
-		debug_printf("angle: %f\n\r", ang.angleWheel_l);
+
+		debug_printf("angle: %f revolution: %i\n", ang.angleWheel_l, revs.revsWheel_l);
 		LL_mDelay(100);
 	}
 }

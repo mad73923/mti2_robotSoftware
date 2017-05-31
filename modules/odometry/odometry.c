@@ -16,3 +16,9 @@ odo_angles odometry_getAngles(void){
 	ret.angleWheel_l = sensor_getAngle(TLE_LEFT);
 	return ret;
 }
+
+odo_revs odometry_getRevolutions(void){
+	odo_revs ret;
+	ret.revsWheel_l = sensor_getRevolutions(TLE_LEFT);
+	return ret;
+}

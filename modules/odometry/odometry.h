@@ -14,8 +14,12 @@ typedef struct{
 	float angleWheel_l;
 }odo_angles;
 
+typedef struct{
+	int16_t revsWheel_l;
+}odo_revs;
+
 void odometry_init(void);
 odo_angles odometry_getAngles(void);
-
+odo_revs odometry_getRevolutions(void);
 
 #endif /* ODOMETRY_ODOMETRY_H_ */

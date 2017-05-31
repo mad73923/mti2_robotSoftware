@@ -25,6 +25,7 @@ void sensor_init(void){
 }
 
 uint16_t sensor_readRegister(TLE5012B_REG_t reg, TLE5012B_ACT_t side){
+	SPI_waitForClearance();
 	uint16_t rxBuffer = 0;
 	uint16_t txBuffer = 0;
 
@@ -59,6 +60,15 @@ float sensor_getAngle(TLE5012B_ACT_t side){
 	}
 	float ret = (360.0*val)/32768.0;
 	return ret;
+}
+
+int16_t sensor_getRevolutions(TLE5012B_ACT_t side){
+	int16_t val = sensor_readRegister(AREV, side);
+	val &= 0b111111111;
+	if(val & 0b100000000){
+		val = 0b1111111100000000+(val&0b11111111);
+	}
+	return val;
 }
 
 /*
