@@ -63,6 +63,7 @@ typedef enum{
 }TLE5012B_REG_t;
 
 #define TLE5012B_AS_RST		0x01
+#define TLE5012B_AS_FUSE	(0x01<<3)
 
 typedef enum{
 	TLE_LEFT,
@@ -74,5 +75,8 @@ uint16_t sensor_readRegister(TLE5012B_REG_t reg, TLE5012B_ACT_t side);
 void sensor_writeRegister(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT_t side);
 float sensor_getAngle(TLE5012B_ACT_t side);
 int16_t sensor_getRevolutions(TLE5012B_ACT_t side);
+
+void sensor_hardwareReset(TLE5012B_ACT_t side);
+void sensor_disableCRCMonitoring(TLE5012B_ACT_t side);
 
 #endif /* ODOMETRY_TLE5012B_H_ */
