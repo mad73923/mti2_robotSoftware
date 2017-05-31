@@ -62,6 +62,54 @@ uint8_t ESP8266createAP(const char* SSID,const char* PW,const char* IP){
 	return returnval;
 }
 
+uint8_t ESP8266connectToAp(const char* SSID,const char* PW,const char* IP){
+	char buffer[80];
+	uint8_t returnval = 0;
+	//Set Mode to Soft AP
+	UARTStartTransfers("AT+RST\r\n");
+	UARTwaitEndOfTransfer();
+	returnval = UARTwaitForReady(500000);
+	if(returnval!=0){
+		return returnval;
+	}
+	UARTStartTransfers("ATE0\r\n");
+	UARTwaitEndOfTransfer();
+	returnval = UARTwaitForOkOrError(500000);
+	if(returnval!=0){
+		return returnval;
+	}
+	UARTStartTransfers("AT+CWMODE_CUR=1\r\n");
+	UARTwaitEndOfTransfer();
+	returnval = UARTwaitForOkOrError(500000);
+	if(returnval!=0){
+		return returnval;
+	}
+	debug_printf("Setting STA-Mode successful!\n\r");
+	strcpy(buffer,"AT+CWJAP_CUR=\"");
+	strcat(buffer,SSID);
+	strcat(buffer,"\",\"");
+	strcat(buffer,PW);
+	strcat(buffer,"\"\r\n");
+	UARTStartTransfers(buffer);
+	UARTwaitEndOfTransfer();
+	returnval = UARTwaitForOkOrError(500000);
+	if(returnval!=0){
+			return returnval;
+	}
+	debug_printf("Connecting to AP successful!\n\r");
+	strcpy(buffer,"AT+CIPSTA_CUR=\"");
+	strcat(buffer,IP);
+	strcat(buffer,"\"\r\n");
+	UARTStartTransfers(buffer);
+	UARTwaitEndOfTransfer();
+	returnval = UARTwaitForOkOrError(500000);
+	if(returnval!=0){
+			return returnval;
+	}
+	debug_printf("Setting IP-Address successful!\n\r");
+	return returnval;
+}
+
 uint8_t ESP8266startServer(const char* Port){
 	char buffer[80];
 	uint8_t returnval = 0;
