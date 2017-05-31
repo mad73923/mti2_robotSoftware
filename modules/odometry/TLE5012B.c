@@ -115,7 +115,9 @@ void sensor_setAngleTo0(TLE5012B_ACT_t side){
 	int16_t val = sensor_readRegister(AVAL, side);
 	val &= 0b0111111111111111;
 	if(val & 0b0100000000000000){
-		val = 0b1100000000000000+(val&0b0011111111111111);
+		val = 0b1111100000000000+((val&0b0011111111111111)>>3);
+	}else{
+		val = val >> 3;
 	}
 	int16_t baseVal = sensor_readRegister(MOD_3, side);
 	baseVal &= 0b1111111111110000;
@@ -123,7 +125,7 @@ void sensor_setAngleTo0(TLE5012B_ACT_t side){
 			baseVal = 0b1111000000000000|(baseVal>>4);
 		}
 	int16_t newVal = baseVal - val;
-	newVal &= 0b1111111111110000;
+	newVal = newVal<<4;
 	sensor_writeRegister(MOD_3, newVal, side);
 }
 
