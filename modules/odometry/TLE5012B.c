@@ -22,6 +22,8 @@ void CS_resetAll(void);
 void sensor_init(void){
 	SPI_init();
 	CS_init();
+
+	sensor_hardwareReset();
 }
 
 uint16_t sensor_readRegister(TLE5012B_REG_t reg, TLE5012B_ACT_t side){
@@ -52,6 +54,34 @@ uint16_t sensor_readRegister(TLE5012B_REG_t reg, TLE5012B_ACT_t side){
 	return rxBuffer;
 }
 
+void sensor_writeRegister(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT_t side){
+	SPI_waitForClearance();
+	uint16_t txBuffer[2];
+	txBuffer[0] = 0;
+	txBuffer[1] = value;
+
+	txBuffer[0] |= TLE5012B_RW_WRITE << TLE5012B_RW_POS;
+
+	if(reg<0x05){
+		txBuffer[0] |= TLE5012B_LOCK_0_4<<TLE5012B_LOCK_POS;
+	}else{
+		txBuffer[0] |= TLE5012B_LOCK_5_11<<TLE5012B_LOCK_POS;
+	}
+
+	txBuffer[0] |= reg << TLE5012B_ADDR_POS;
+	txBuffer[0] |= 0x01 << TLE5012B_ND_POS;
+
+	if(side == TLE_LEFT){
+		CS_activateLeft();
+	}
+
+	SPI_communicate_sync(&txBuffer[0], 2, 0, 1);
+
+	CS_resetAll();
+
+	return;
+}
+
 float sensor_getAngle(TLE5012B_ACT_t side){
 	int16_t val = sensor_readRegister(AVAL, side);
 	val &= 0b0111111111111111;
@@ -69,6 +99,10 @@ int16_t sensor_getRevolutions(TLE5012B_ACT_t side){
 		val = 0b1111111100000000+(val&0b11111111);
 	}
 	return val;
+}
+
+void sensor_hardwareReset(TLE5012B_ACT_t side){
+	sensor_writeRegister(ACSTAT, TLE5012B_AS_RST, side);
 }
 
 /*

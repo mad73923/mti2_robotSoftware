@@ -89,13 +89,15 @@ void SPI_communicate_sync(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pdataRX
 
 
 	LL_SPI_Disable(TLE_SPI_INST);
-	LL_SPI_SetTransferDirection(TLE_SPI_INST, LL_SPI_HALF_DUPLEX_RX);
-	SPI_cleanRXBuffer();
-	LL_SPI_EnableIT_RXNE(TLE_SPI_INST);
-	LL_SPI_Enable(TLE_SPI_INST);
+	if(ndataRX > 0){
+		LL_SPI_SetTransferDirection(TLE_SPI_INST, LL_SPI_HALF_DUPLEX_RX);
+		SPI_cleanRXBuffer();
+		LL_SPI_EnableIT_RXNE(TLE_SPI_INST);
+		LL_SPI_Enable(TLE_SPI_INST);
 
-	while(nbIndexReceive<nbDataToReceive);
-	LL_SPI_Disable(TLE_SPI_INST);
+		while(nbIndexReceive<nbDataToReceive);
+		LL_SPI_Disable(TLE_SPI_INST);
+	}
 }
 
 void SPI_waitForClearance(void){
