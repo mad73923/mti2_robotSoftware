@@ -17,4 +17,22 @@ void SPI_init(void);
 void SPI_communicate_sync(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pdataRX, uint32_t ndataRX);
 void SPI_waitForClearance(void);
 
+#define TLE_SPI_INST		SPI1
+#define TLE_SPI_IRQN		SPI1_IRQn
+#define TLE_SPI_IRQ_PRIO	5
+#define TLE_SPI_CLK_INIT()	LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SPI1)
+#define TLE_SPI_IRQ_HANDLER	SPI1_IRQHandler
+
+#define TLE_GPIO_SCK_CLK_INIT()		LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOB)
+#define TLE_GPIO_SCK		GPIOB
+#define TLE_GPIO_SCK_PIN	LL_GPIO_PIN_3
+#define TLE_GPIO_SCK_SETAF	LL_GPIO_SetAFPin_0_7
+#define TLE_GPIO_SCK_AF		LL_GPIO_AF_5
+
+#define TLE_GPIO_MOSI_CLK_INIT()	LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOB)
+#define TLE_GPIO_MOSI		GPIOB
+#define TLE_GPIO_MOSI_PIN	LL_GPIO_PIN_5
+#define TLE_GPIO_MOSI_SETAF	LL_GPIO_SetAFPin_0_7
+#define TLE_GPIO_MOSI_AF	LL_GPIO_AF_5
+
 #endif /* ODOMETRY_SPI_H_ */

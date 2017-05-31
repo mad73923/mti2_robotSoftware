@@ -19,8 +19,8 @@ volatile uint32_t nbIndexReceive;
  * Private function prototypes
  */
 
-void SPI1_Tx_Callback(void);
-void SPI1_Rx_Callback(void);
+void TLE_SPI_Tx_Callback(void);
+void TLE_SPI_Rx_Callback(void);
 void SPI_cleanRXBuffer(void);
 
 /*
@@ -28,51 +28,49 @@ void SPI_cleanRXBuffer(void);
  */
 
 void SPI_init(void){
-	/* (1) Enables GPIO clock and configures the SPI1 pins ********************/
+	/* Configure SCK Pin */
+	TLE_GPIO_SCK_CLK_INIT();
+	LL_GPIO_SetPinMode(TLE_GPIO_SCK, TLE_GPIO_SCK_PIN, LL_GPIO_MODE_ALTERNATE);
+	TLE_GPIO_SCK_SETAF(TLE_GPIO_SCK, TLE_GPIO_SCK_PIN, TLE_GPIO_SCK_AF);
+	LL_GPIO_SetPinSpeed(TLE_GPIO_SCK, TLE_GPIO_SCK_PIN, LL_GPIO_SPEED_FREQ_VERY_HIGH);
+	LL_GPIO_SetPinPull(TLE_GPIO_SCK, TLE_GPIO_SCK_PIN, LL_GPIO_PULL_DOWN);
+
+	/* Configure MOSI Pin */
+	TLE_GPIO_MOSI_CLK_INIT();
+	LL_GPIO_SetPinMode(TLE_GPIO_MOSI, TLE_GPIO_MOSI_PIN, LL_GPIO_MODE_ALTERNATE);
+	TLE_GPIO_MOSI_SETAF(TLE_GPIO_MOSI, TLE_GPIO_MOSI_PIN, TLE_GPIO_MOSI_AF);
+	LL_GPIO_SetPinSpeed(TLE_GPIO_MOSI, TLE_GPIO_MOSI_PIN, LL_GPIO_SPEED_FREQ_VERY_HIGH);
+	LL_GPIO_SetPinPull(TLE_GPIO_MOSI, TLE_GPIO_MOSI_PIN, LL_GPIO_PULL_DOWN);
+
+	/* (2) Configure NVIC for TLE_SPI_INST transfer complete/error interrupts **********/
+	/* Set priority for TLE_SPI_INST_IRQn */
+	NVIC_SetPriority(TLE_SPI_IRQN, TLE_SPI_IRQ_PRIO);
+	/* Enable TLE_SPI_INST_IRQn           */
+	NVIC_EnableIRQ(TLE_SPI_IRQN);
+
+	/* (3) Configure TLE_SPI_INST functional parameters ********************************/
 	/* Enable the peripheral clock of GPIOB */
-	LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOB);
+	TLE_SPI_CLK_INIT();
 
-	/* Configure SCK Pin connected to pin 31 of CN10 connector */
-	LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_3, LL_GPIO_MODE_ALTERNATE);
-	LL_GPIO_SetAFPin_0_7(GPIOB, LL_GPIO_PIN_3, LL_GPIO_AF_5);
-	LL_GPIO_SetPinSpeed(GPIOB, LL_GPIO_PIN_3, LL_GPIO_SPEED_FREQ_VERY_HIGH);
-	LL_GPIO_SetPinPull(GPIOB, LL_GPIO_PIN_3, LL_GPIO_PULL_DOWN);
-
-	/* Configure MOSI Pin connected to pin 29 of CN10 connector */
-	LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_5, LL_GPIO_MODE_ALTERNATE);
-	LL_GPIO_SetAFPin_0_7(GPIOB, LL_GPIO_PIN_5, LL_GPIO_AF_5);
-	LL_GPIO_SetPinSpeed(GPIOB, LL_GPIO_PIN_5, LL_GPIO_SPEED_FREQ_VERY_HIGH);
-	LL_GPIO_SetPinPull(GPIOB, LL_GPIO_PIN_5, LL_GPIO_PULL_DOWN);
-
-	/* (2) Configure NVIC for SPI1 transfer complete/error interrupts **********/
-	/* Set priority for SPI1_IRQn */
-	NVIC_SetPriority(SPI1_IRQn, 0);
-	/* Enable SPI1_IRQn           */
-	NVIC_EnableIRQ(SPI1_IRQn);
-
-	/* (3) Configure SPI1 functional parameters ********************************/
-	/* Enable the peripheral clock of GPIOB */
-	LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SPI1);
-
-	/* Configure SPI1 communication */
-	LL_SPI_SetBaudRatePrescaler(SPI1, LL_SPI_BAUDRATEPRESCALER_DIV256);
-	LL_SPI_SetTransferDirection(SPI1,LL_SPI_HALF_DUPLEX_TX);
-	LL_SPI_SetClockPhase(SPI1, LL_SPI_PHASE_2EDGE);
-	LL_SPI_SetClockPolarity(SPI1, LL_SPI_POLARITY_LOW);
+	/* Configure TLE_SPI_INST communication */
+	LL_SPI_SetBaudRatePrescaler(TLE_SPI_INST, LL_SPI_BAUDRATEPRESCALER_DIV256);
+	LL_SPI_SetTransferDirection(TLE_SPI_INST,LL_SPI_HALF_DUPLEX_TX);
+	LL_SPI_SetClockPhase(TLE_SPI_INST, LL_SPI_PHASE_2EDGE);
+	LL_SPI_SetClockPolarity(TLE_SPI_INST, LL_SPI_POLARITY_LOW);
 	/* Reset value is LL_SPI_MSB_FIRST */
-	LL_SPI_SetTransferBitOrder(SPI1, LL_SPI_MSB_FIRST);
-	LL_SPI_SetDataWidth(SPI1, LL_SPI_DATAWIDTH_16BIT);
-	LL_SPI_SetNSSMode(SPI1, LL_SPI_NSS_SOFT);
-	LL_SPI_SetRxFIFOThreshold(SPI1, LL_SPI_RX_FIFO_TH_HALF);
-	LL_SPI_SetMode(SPI1, LL_SPI_MODE_MASTER);
+	LL_SPI_SetTransferBitOrder(TLE_SPI_INST, LL_SPI_MSB_FIRST);
+	LL_SPI_SetDataWidth(TLE_SPI_INST, LL_SPI_DATAWIDTH_16BIT);
+	LL_SPI_SetNSSMode(TLE_SPI_INST, LL_SPI_NSS_SOFT);
+	LL_SPI_SetRxFIFOThreshold(TLE_SPI_INST, LL_SPI_RX_FIFO_TH_HALF);
+	LL_SPI_SetMode(TLE_SPI_INST, LL_SPI_MODE_MASTER);
 
-	/* Configure SPI1 transfer interrupts */
+	/* Configure TLE_SPI_INST transfer interrupts */
 	/* Enable TXE   Interrupt */
-	LL_SPI_EnableIT_TXE(SPI1);
+	LL_SPI_EnableIT_TXE(TLE_SPI_INST);
 	/* Enable RXNE   Interrupt */
-	LL_SPI_EnableIT_RXNE(SPI1);
-	/* Enable SPI1 Error Interrupt */
-	LL_SPI_EnableIT_ERR(SPI1);
+	LL_SPI_EnableIT_RXNE(TLE_SPI_INST);
+	/* Enable TLE_SPI_INST Error Interrupt */
+	LL_SPI_EnableIT_ERR(TLE_SPI_INST);
 }
 
 void SPI_communicate_sync(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pdataRX, uint32_t ndataRX){
@@ -83,25 +81,25 @@ void SPI_communicate_sync(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pdataRX
 	nbIndexReceive = 0;
 	nbIndexTransmit = 0;
 
-	LL_SPI_EnableIT_TXE(SPI1);
-	LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_TX);
-	LL_SPI_Enable(SPI1);
+	LL_SPI_EnableIT_TXE(TLE_SPI_INST);
+	LL_SPI_SetTransferDirection(TLE_SPI_INST, LL_SPI_HALF_DUPLEX_TX);
+	LL_SPI_Enable(TLE_SPI_INST);
 	while(nbIndexTransmit<nbDataToTransmit);
-	while(LL_SPI_IsActiveFlag_BSY(SPI1));
+	while(LL_SPI_IsActiveFlag_BSY(TLE_SPI_INST));
 
 
-	LL_SPI_Disable(SPI1);
-	LL_SPI_SetTransferDirection(SPI1, LL_SPI_HALF_DUPLEX_RX);
+	LL_SPI_Disable(TLE_SPI_INST);
+	LL_SPI_SetTransferDirection(TLE_SPI_INST, LL_SPI_HALF_DUPLEX_RX);
 	SPI_cleanRXBuffer();
-	LL_SPI_EnableIT_RXNE(SPI1);
-	LL_SPI_Enable(SPI1);
+	LL_SPI_EnableIT_RXNE(TLE_SPI_INST);
+	LL_SPI_Enable(TLE_SPI_INST);
 
 	while(nbIndexReceive<nbDataToReceive);
-	LL_SPI_Disable(SPI1);
+	LL_SPI_Disable(TLE_SPI_INST);
 }
 
 void SPI_waitForClearance(void){
-	while(LL_SPI_IsActiveFlag_BSY(SPI1));
+	while(LL_SPI_IsActiveFlag_BSY(TLE_SPI_INST));
 }
 
 /*
@@ -109,26 +107,26 @@ void SPI_waitForClearance(void){
  */
 
 void SPI_cleanRXBuffer(void){
-	while(LL_SPI_IsActiveFlag_RXNE(SPI1))
-		LL_SPI_ReceiveData16(SPI1);
+	while(LL_SPI_IsActiveFlag_RXNE(TLE_SPI_INST))
+		LL_SPI_ReceiveData16(TLE_SPI_INST);
 	nbIndexReceive = 0;
 }
 
-void SPI1_Tx_Callback(void){
+void TLE_SPI_Tx_Callback(void){
 	if(nbIndexTransmit<nbDataToTransmit){
-		LL_SPI_TransmitData16(SPI1, dataTX[nbIndexTransmit]);
+		LL_SPI_TransmitData16(TLE_SPI_INST, dataTX[nbIndexTransmit]);
 		nbIndexTransmit++;
 	}else{
-		LL_SPI_DisableIT_TXE(SPI1);
+		LL_SPI_DisableIT_TXE(TLE_SPI_INST);
 	}
 }
 
-void SPI1_Rx_Callback(void){
+void TLE_SPI_Rx_Callback(void){
 	if(nbIndexReceive<nbDataToReceive){
-		dataRX[nbIndexReceive] = LL_SPI_ReceiveData16(SPI1);
+		dataRX[nbIndexReceive] = LL_SPI_ReceiveData16(TLE_SPI_INST);
 		nbIndexReceive++;
 	}else{
-		LL_SPI_DisableIT_RXNE(SPI1);
+		LL_SPI_DisableIT_RXNE(TLE_SPI_INST);
 	}
 }
 
@@ -136,15 +134,15 @@ void SPI1_Rx_Callback(void){
  * Interrupt handler
  */
 
-void SPI1_IRQHandler(void){
+void TLE_SPI_IRQ_HANDLER(void){
 	/* Check TXE flag value in ISR register */
-	if(LL_SPI_IsActiveFlag_TXE(SPI1)){
+	if(LL_SPI_IsActiveFlag_TXE(TLE_SPI_INST)){
 		/* Call function Master Transmission Callback */
-		SPI1_Tx_Callback();
+		TLE_SPI_Tx_Callback();
 	}
 	/* Check RXNE flag value in ISR register */
-	if(LL_SPI_IsActiveFlag_RXNE(SPI1)){
+	if(LL_SPI_IsActiveFlag_RXNE(TLE_SPI_INST)){
 		/* Call function Slave Reception Callback */
-		SPI1_Rx_Callback();
+		TLE_SPI_Rx_Callback();
 	}
 }
