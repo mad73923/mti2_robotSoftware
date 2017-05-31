@@ -24,6 +24,8 @@ void sensor_init(void){
 	CS_init();
 
 	sensor_hardwareReset(TLE_LEFT);
+	sensor_disableCRCMonitoring(TLE_LEFT);
+	sensor_setAngleTo0(TLE_LEFT);
 }
 
 uint16_t sensor_readRegister(TLE5012B_REG_t reg, TLE5012B_ACT_t side){
@@ -107,6 +109,22 @@ void sensor_hardwareReset(TLE5012B_ACT_t side){
 
 void sensor_disableCRCMonitoring(TLE5012B_ACT_t side){
 	sensor_writeRegister(ACSTAT, TLE5012B_AS_FUSE, side);
+}
+
+void sensor_setAngleTo0(TLE5012B_ACT_t side){
+	int16_t val = sensor_readRegister(AVAL, side);
+	val &= 0b0111111111111111;
+	if(val & 0b0100000000000000){
+		val = 0b1100000000000000+(val&0b0011111111111111);
+	}
+	int16_t baseVal = sensor_readRegister(MOD_3, side);
+	baseVal &= 0b1111111111110000;
+		if(baseVal & 0b1000000000000000){
+			baseVal = 0b1111000000000000|(baseVal>>4);
+		}
+	int16_t newVal = baseVal - val;
+	newVal &= 0b1111111111110000;
+	sensor_writeRegister(MOD_3, newVal, side);
 }
 
 /*
