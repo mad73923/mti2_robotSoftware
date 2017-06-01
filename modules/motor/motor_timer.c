@@ -8,7 +8,7 @@
 
 /**
   * @brief  With this function the Timer of both PWM-Channels (MotorLeft, MotorRight)
-  * 		will be configured. I dunno the times by now, cuz I'm too lazy...later...
+  * 		will be configured.
   * @param  None
   * @retval None
   *///
@@ -17,6 +17,9 @@ void motor_timer_init(void){
 	/* Enable the MotorLeft/MotorRight_GPÌO_Clock */
 	MOTORRIGHT_GPIO_CLK_ENABLEA();
 	MOTORLEFT_GPIO_CLK_ENABLEB();
+
+	/* Enable Pin-Outputs */
+	configure_gpio();
 
 	/* GPIO TIM4_CH1 configuration */
 	LL_GPIO_SetPinMode(MOTORLEFT_PWM_PORT, MOTORLEFT_PWM_PIN, LL_GPIO_MODE_ALTERNATE);
@@ -86,7 +89,44 @@ void motor_timer_init(void){
   * @param  cMotor (Left/Right Motor) cDir(Forward, Backward) iCC(CaptureCompare (0-100))
   * @retval None
   */
-void set_cc(char cMotor,char cDir, int iCC){
+int set_cc(char cMotor,char cDir, int iCC){
 
+	if(iCC == SPEED_NONE){
+		if(cMotor == MOTORLEFT){
+			if(cDir==FORWARD){
+				LL_GPIO_SetOutputPin(MOTORLEFT_DIR_PORT, MOTORLEFT_DIR_PIN);
+			}else{
+				LL_GPIO_ResetOutputPin(MOTORLEFT_DIR_PORT, MOTORLEFT_DIR_PIN);
+			}
+
+		}
+		if(cMotor == MOTORRIGHT){
+			if(cDir==FORWARD){
+				LL_GPIO_SetOutputPin(MOTORRIGHT_DIR_PORT, MOTORRIGHT_DIR_PIN);
+			}else{
+				LL_GPIO_ResetOutputPin(MOTORRIGHT_DIR_PORT, MOTORRIGHT_DIR_PIN);
+			}
+		}
+		return 1;
+	}
+
+	if(cMotor == MOTORLEFT){
+		if(cDir == FORWARD){
+			LL_TIM_OC_SetCompareCH2(TIM3, iCC);
+		}else if(cDir == BACKWARD){
+			LL_TIM_OC_SetCompareCH2(TIM3, iCC);
+		}else{
+			LL_TIM_OC_SetCompareCH2(TIM3, iCC);
+		}
+	}
+	if(cMotor == MOTORRIGHT){
+		if(cDir == FORWARD){
+			LL_TIM_OC_SetCompareCH1(TIM4, iCC);
+		}else if(cDir == BACKWARD){
+			LL_TIM_OC_SetCompareCH1(TIM4, iCC);
+		}else{
+			LL_TIM_OC_SetCompareCH1(TIM4, iCC);
+		}
+	}
 
 }
