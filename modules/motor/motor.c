@@ -25,31 +25,44 @@ void configure_gpio(void){
 }
 
 /**
-  * @brief  With this function the speed of the
-  * @param  cMotor (Which Motor), iSpeed(Speed from 0-1999)
-  * @retval None
-  *///
+  * @brief  With this function the speed of a motor will be set.
+  * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT), iSpeed(Speed from 400-1999 @9V Motor Power Supply)
+  * @retval The CC-Value of the PWM, if anything went wrong -1
+  */
 int setSpeed(char cMotor, int iSpeed){
-	if((iSpeed<0) || (iSpeed>1999)){
+	if((iSpeed<400) || (iSpeed>1999)){
 		return -1;
 	}
-	return set_cc(cMotor, NONE, iSpeed);
+	return set_cc(cMotor, iSpeed);
 }
 
-
+/**
+  * @brief  With this function the direction of a motor will be changed
+  * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT), the direction cDir (FORWARD/BACKWARD)
+  * @retval The direction value
+  */
 int setDirection(char cMotor,char cDir){
-	return set_cc(cMotor,cDir,SPEED_NONE);
+	return set_dir(cMotor,cDir);
 }
 
-
+/**
+  * @brief  With this function the speed and direction of a motor will be changed
+  * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT), the direction cDir (FORWARD/BACKWARD),  iSpeed(Speed from 400-1999 @9V Motor Power Supply)
+  * @retval The CC-Value of the PWM, if anything went wrong -1
+  */
 int setSpeedDir(char cMotor, char cDir, int iSpeed){
 	if((iSpeed<0) || (iSpeed>100)){
 			return -1;
 	}
-	return set_cc(cMotor,cDir,iSpeed);
+	set_dir(cMotor,cDir);
+	return set_cc(cMotor,iSpeed);
 }
 
-
+/**
+  * @brief  With this function the motor stops
+  * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT)
+  * @retval The CC-Value of the PWM, if anything went wrong -1
+  */
 int stop(char cMotor){
-	return set_cc(cMotor,NONE,0);
+	return set_cc(cMotor,0);
 }

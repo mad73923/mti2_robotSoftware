@@ -85,48 +85,48 @@ void motor_timer_init(void){
 }
 
 /**
-  * @brief  With this function the a specific Motor will be controlled by direction and speed.
+  * @brief  With this function the speed of a specific Motor will be set.
+  * @param  cMotor (Left/Right Motor), iCC(CaptureCompare (0-100))
+  * @retval None
+  */
+int set_cc(char cMotor, int iCC){
+
+	if(cMotor == MOTORLEFT){
+		LL_TIM_OC_SetCompareCH2(TIM3, iCC);
+		return 1;
+	}else if(cMotor == MOTORRIGHT){
+		LL_TIM_OC_SetCompareCH1(TIM4, iCC);
+		return 1;
+	}else{
+		return -1;
+	}
+}
+
+/**
+  * @brief  With this function the direction of a specific Motor will be set.
   * @param  cMotor (Left/Right Motor) cDir(Forward, Backward) iCC(CaptureCompare (0-100))
   * @retval None
   */
-int set_cc(char cMotor,char cDir, int iCC){
-
-	if(iCC == SPEED_NONE){
-		if(cMotor == MOTORLEFT){
-			if(cDir==FORWARD){
-				LL_GPIO_SetOutputPin(MOTORLEFT_DIR_PORT, MOTORLEFT_DIR_PIN);
-			}else{
-				LL_GPIO_ResetOutputPin(MOTORLEFT_DIR_PORT, MOTORLEFT_DIR_PIN);
-			}
-
-		}
-		if(cMotor == MOTORRIGHT){
-			if(cDir==FORWARD){
-				LL_GPIO_SetOutputPin(MOTORRIGHT_DIR_PORT, MOTORRIGHT_DIR_PIN);
-			}else{
-				LL_GPIO_ResetOutputPin(MOTORRIGHT_DIR_PORT, MOTORRIGHT_DIR_PIN);
-			}
-		}
-		return 1;
-	}
+int set_dir(char cMotor,char cDir){
 
 	if(cMotor == MOTORLEFT){
-		if(cDir == FORWARD){
-			LL_TIM_OC_SetCompareCH2(TIM3, iCC);
-		}else if(cDir == BACKWARD){
-			LL_TIM_OC_SetCompareCH2(TIM3, iCC);
+		if(cDir==FORWARD){
+			LL_GPIO_SetOutputPin(MOTORLEFT_DIR_PORT, MOTORLEFT_DIR_PIN);
+			return FORWARD;
 		}else{
-			LL_TIM_OC_SetCompareCH2(TIM3, iCC);
+			LL_GPIO_ResetOutputPin(MOTORLEFT_DIR_PORT, MOTORLEFT_DIR_PIN);
+			return BACKWARD;
 		}
+
 	}
 	if(cMotor == MOTORRIGHT){
-		if(cDir == FORWARD){
-			LL_TIM_OC_SetCompareCH1(TIM4, iCC);
-		}else if(cDir == BACKWARD){
-			LL_TIM_OC_SetCompareCH1(TIM4, iCC);
+		if(cDir==FORWARD){
+			LL_GPIO_SetOutputPin(MOTORRIGHT_DIR_PORT, MOTORRIGHT_DIR_PIN);
+			return FORWARD;
 		}else{
-			LL_TIM_OC_SetCompareCH1(TIM4, iCC);
+			LL_GPIO_ResetOutputPin(MOTORRIGHT_DIR_PORT, MOTORRIGHT_DIR_PIN);
+			return BACKWARD;
 		}
-	}
 
+	}
 }
