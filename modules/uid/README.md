@@ -8,4 +8,4 @@ No hardware instances needed.
 
 ## Usage
 
-`uid_getUIDString` returns a pointer to the UID-string in the the following format: `(\d\d:){11}\d\d`. 36 chars total, \0 included.
+`uid_getUIDString` returns a pointer to the UID-string in the the following format: `[0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){11}`. 36 chars total, \0 included.
