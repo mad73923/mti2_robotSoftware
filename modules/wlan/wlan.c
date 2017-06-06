@@ -23,6 +23,10 @@ uint8_t WLANstartServer(const char* Port){
 	return ESP8266startServer(Port);
 }
 
-uint8_t WLANhandleConnections(void){
-	return ESP8266handleConnections();
+uint8_t WLANhandleConnectionsWithHtml(void){
+	return ESP8266handleConnectionsWithHtml();
+}
+
+const char* WLANgetIncomingTCPdata(void){
+	return ESP8266getIncomingTCPdata();
 }

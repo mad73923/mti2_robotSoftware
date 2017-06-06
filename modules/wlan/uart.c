@@ -13,6 +13,7 @@ void USART_RecieveCallback(void);
 void UARTStartTransfers(const char* Command);
 void UARTwaitEndOfTransfer(void);
 uint8_t UARTwaitForOkOrError(uint32_t cyclesTimeout);
+const char* UARTCheckForIPD(void);
 
 
 uint8_t TxLength;
@@ -23,6 +24,8 @@ volatile uint8_t TransmissionError;
 char RxBuffer[1000] = "";
 volatile uint16_t Characters = 0;
 volatile uint8_t Lines = 0; //wir ind ISR um 1 erhöht bei jedem \n = 0A
+
+char IPDBuffer[100] = "";
 
 
 void UARTinit(){
@@ -285,4 +288,13 @@ void USART_RecieveCallback(void){
 			//debug_printf("%s",RxBuffer);
 		}
 	}
+}
+
+const char* UARTCheckForIPD(void){
+	const char* returnval = NULL;
+		if(Lines>0 && strstr(RxBuffer,"IPD")){
+
+		}
+
+	return returnval;
 }

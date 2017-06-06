@@ -16,7 +16,8 @@ void WLANinit();
 uint8_t WLANcreateAP(const char* SSID,const char* PW,const char* IP);
 uint8_t WLANconnectToAp(const char* SSID,const char* PW,const char* IP);
 uint8_t WLANstartServer(const char* Port);
-uint8_t WLANhandleConnections(void);
+uint8_t WLANhandleConnectionsWithHtml(void);
+const char* WLANgetIncomingTCPdata(void);
 
 
 #endif /* WLAN_WLAN_H_ */

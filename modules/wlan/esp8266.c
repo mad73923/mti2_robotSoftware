@@ -72,7 +72,7 @@ uint8_t ESP8266connectToAp(const char* SSID,const char* PW,const char* IP){
 	if(returnval!=0){
 		return returnval;
 	}
-	UARTStartTransfers("ATE0\r\n");
+	UARTStartTransfers("ATE1\r\n");
 	UARTwaitEndOfTransfer();
 	returnval = UARTwaitForOkOrError(500000);
 	if(returnval!=0){
@@ -92,7 +92,7 @@ uint8_t ESP8266connectToAp(const char* SSID,const char* PW,const char* IP){
 	strcat(buffer,"\"\r\n");
 	UARTStartTransfers(buffer);
 	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForOkOrError(500000);
+	returnval = UARTwaitForOkOrError(2000000);
 	if(returnval!=0){
 			return returnval;
 	}
@@ -134,7 +134,7 @@ uint8_t ESP8266startServer(const char* Port){
 	return returnval;
 }
 
-uint8_t ESP8266handleConnections(void){
+uint8_t ESP8266handleConnectionsWithHtml(void){
 	uint8_t returnval = -1;
 	uint8_t client = UARTcheckForNewConnection();
 	if(client<=3){
@@ -175,3 +175,8 @@ uint8_t ESP8266handleConnections(void){
 	return returnval;
 }
 
+const char* ESP8266getIncomingTCPdata(void){
+	const char* returnval = NULL;
+	returnval = UARTCheckForIPD();
+	return returnval;
+}
