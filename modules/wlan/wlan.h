@@ -18,6 +18,8 @@ uint8_t WLANconnectToAp(const char* SSID,const char* PW,const char* IP);
 uint8_t WLANstartServer(const char* Port);
 uint8_t WLANhandleConnectionsWithHtml(void);
 const char* WLANgetIncomingTCPdata(void);
+uint8_t WLANconnectToTCPserver(const char* IP, const char* Port);
+uint8_t WLANsendUID(const char* UID);
 
 
 #endif /* WLAN_WLAN_H_ */

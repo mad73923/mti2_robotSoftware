@@ -18,6 +18,8 @@ uint8_t ESP8266connectToAp(const char* SSID,const char* PW,const char* IP);
 uint8_t ESP8266startServer(const char* Port);
 uint8_t ESP8266handleConnectionsWithHtml(void);
 const char* ESP8266getIncomingTCPdata(void);
+uint8_t ESP8266connectToTCPserver(const char* IP, const char* Port);
+uint8_t ESP8266sendUID(const char* UID);
 
 
 

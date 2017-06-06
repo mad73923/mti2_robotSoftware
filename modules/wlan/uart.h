@@ -15,6 +15,7 @@
 #include "stm32l4xx_ll_dma.h"
 #include <string.h>
 #include "../modules/debug/debug.h"
+#include <stdlib.h>
 
 void UARTinit(void);
 void UARTStartTransfers(const char* Command);

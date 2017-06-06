@@ -292,9 +292,22 @@ void USART_RecieveCallback(void){
 
 const char* UARTCheckForIPD(void){
 	const char* returnval = NULL;
-		if(Lines>0 && strstr(RxBuffer,"IPD")){
-
+	uint8_t length = 0;
+		if(Lines>0 && strstr(RxBuffer,"+IPD,")){
+			char *ptrComma, *ptrDoppelpkt ;
+			ptrComma = strchr(RxBuffer,',');
+			ptrDoppelpkt = strchr(RxBuffer,':');
+			if((ptrComma)&&(ptrDoppelpkt)){
+				length = strtod(ptrComma+1,NULL);
+				char *ptrEnd = ptrDoppelpkt+length;
+				while(*ptrEnd==0){}; //warten bis alle Zeichen empfangen sind
+				strncpy(IPDBuffer,ptrDoppelpkt+1,length);
+				//debug_printf("%d Zeichen empfangen: %s\n\r",length,IPDBuffer);
+				memset(RxBuffer,0,sizeof(RxBuffer));
+				Lines = 0;
+				Characters = 0;
+				returnval = IPDBuffer;
+			}
 		}
-
 	return returnval;
 }

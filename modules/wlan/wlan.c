@@ -30,3 +30,11 @@ uint8_t WLANhandleConnectionsWithHtml(void){
 const char* WLANgetIncomingTCPdata(void){
 	return ESP8266getIncomingTCPdata();
 }
+
+uint8_t WLANconnectToTCPserver(const char* IP, const char* Port){
+	return ESP8266connectToTCPserver(IP, Port);
+}
+
+uint8_t WLANsendUID(const char* UID){
+	return ESP8266sendUID(UID);
+}
