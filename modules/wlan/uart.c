@@ -16,8 +16,8 @@ uint8_t UARTwaitForOkOrError(uint32_t cyclesTimeout);
 const char* UARTCheckForIPD(void);
 
 
-uint8_t TxLength;
-char TxBuffer[500];
+uint16_t TxLength;
+char TxBuffer[2000];
 volatile uint8_t TransmissionComplete;
 volatile uint8_t TransmissionError;
 

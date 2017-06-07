@@ -38,3 +38,11 @@ uint8_t WLANconnectToTCPserver(const char* IP, const char* Port){
 uint8_t WLANsendUID(const char* UID){
 	return ESP8266sendUID(UID);
 }
+
+uint8_t WLANsendDistances(uint16_t Dist[], uint16_t cntDistanceVal){
+	return ESP8266sendDistances(Dist, cntDistanceVal);
+}
+
+uint8_t WLANsendPos(uint32_t xPos,uint32_t yPos,float angle){
+	return ESP8266sendPos(xPos,yPos,angle);
+}

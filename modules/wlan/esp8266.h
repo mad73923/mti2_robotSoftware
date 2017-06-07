@@ -20,6 +20,9 @@ uint8_t ESP8266handleConnectionsWithHtml(void);
 const char* ESP8266getIncomingTCPdata(void);
 uint8_t ESP8266connectToTCPserver(const char* IP, const char* Port);
 uint8_t ESP8266sendUID(const char* UID);
+uint8_t ESP8266sendDistances(uint16_t Dist[],uint16_t cntDistanceVal);
+uint8_t ESP8266sendPos(uint32_t xPos,uint32_t yPos,float angle);
+
 
 
 

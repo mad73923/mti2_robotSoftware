@@ -230,3 +230,73 @@ uint8_t ESP8266sendUID(const char* UID){
 		}
 	return returnval;
 }
+
+uint8_t ESP8266sendDistances(uint16_t Dist[],uint16_t cntDistanceVal){
+	uint8_t returnval = 0;
+	char bufferMessage[1450];
+	char buffer[80];
+	char buffer2[10];
+	strcpy(bufferMessage,"ActDist=[");
+	for(int i =0;i<cntDistanceVal;i++){
+		if(i<(cntDistanceVal-1)){
+			sprintf(buffer2,"%d,",Dist[i]);
+		}
+		else{
+			sprintf(buffer2,"%d]",Dist[i]);
+		}
+		strcat(bufferMessage,buffer2);
+	}
+	strcpy(buffer,"AT+CIPSEND=");
+	sprintf(buffer2,"%d",strlen(bufferMessage));
+	strcat(buffer,buffer2);
+	strcat(buffer,"\r\n");
+	UARTStartTransfers(buffer);
+	UARTwaitEndOfTransfer();
+	returnval = UARTwaitForStartIndicator(100000);
+	if(returnval!=0){
+		return returnval;
+	}
+	debug_printf("Sending ActDist...\n\r");
+	//debug_printf(bufferMessage);
+	UARTStartTransfers(bufferMessage);
+	UARTwaitEndOfTransfer();
+	returnval = UARTwaitForSendOK(10000000);
+		if(returnval!=0){
+			return returnval;
+		}
+	return returnval;
+}
+
+uint8_t ESP8266sendPos(uint32_t xPos,uint32_t yPos,float angle){
+	uint8_t returnval = 0;
+	char bufferMessage[80];
+	char buffer[80];
+	char buffer2[5];
+	strcpy(bufferMessage,"ActPos=");
+	sprintf(buffer2,"%d,",xPos);
+	strcat(bufferMessage,buffer2);
+	sprintf(buffer2,"%d,",yPos);
+	strcat(bufferMessage,buffer2);
+	sprintf(buffer2,"%.1f",angle);
+	strcat(bufferMessage,buffer2);
+	strcpy(buffer,"AT+CIPSEND=");
+	sprintf(buffer2,"%d\0",strlen(bufferMessage));
+	strcat(buffer,buffer2);
+	strcat(buffer,"\r\n");
+	UARTStartTransfers(buffer);
+	UARTwaitEndOfTransfer();
+	returnval = UARTwaitForStartIndicator(100000);
+	if(returnval!=0){
+		return returnval;
+	}
+	debug_printf("Sending ActPos...\n\r");
+	UARTStartTransfers(bufferMessage);
+	UARTwaitEndOfTransfer();
+	returnval = UARTwaitForSendOK(10000);
+		if(returnval!=0){
+			return returnval;
+		}
+	return returnval;
+}
+
+

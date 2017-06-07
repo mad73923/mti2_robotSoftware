@@ -20,6 +20,8 @@ uint8_t WLANhandleConnectionsWithHtml(void);
 const char* WLANgetIncomingTCPdata(void);
 uint8_t WLANconnectToTCPserver(const char* IP, const char* Port);
 uint8_t WLANsendUID(const char* UID);
+uint8_t WLANsendDistances(uint16_t Dist[], uint16_t cntDistanceVal);
+uint8_t WLANsendPos(uint32_t xPos,uint32_t yPos,float angle);
 
 
 #endif /* WLAN_WLAN_H_ */
