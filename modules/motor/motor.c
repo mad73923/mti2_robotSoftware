@@ -7,9 +7,6 @@
 #include "motor.h"
 
 
-//uint16_t motorLeftSpeed = 0;
-//uint16_t motorrightSpeed = 0;
-
 /**
   * @brief  With this function the GPIO for the direction for MotorLeft &
   * MotorRight will be configured as Output. Furthermore the Beep Output-Pin
@@ -29,11 +26,21 @@ void configure_gpio(void){
 }
 
 /**
-  * @brief  With this function the speed of a motor will be set.
-  * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT), iSpeed(Speed from 400-1999 @9V Motor Power Supply)
+  * @brief  With this function the speed & direction of a motor will be set.
+  * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT), iSpeed(Speed from -1999-400 (Backwards) & +400-1999 (Forward) @9V Motor Power Supply)
   * @retval The CC-Value of the PWM, if anything went wrong -1
   */
-uint16_t motor_setSpeed(char cMotor, int iSpeed){
+uint16_t motor_setSpeed(char cMotor, uint16_t iSpeed){
+
+	//Check direction
+	if(iSpeed<0){
+		set_dir(cMotor,BACKWARD);
+		iSpeed*=-1;
+	}else{
+		set_dir(cMotor,FORWARD);
+	}
+
+	//Check Speed-Limits
 	if(iSpeed<SPEED_MIN){
 		return set_cc(cMotor, 0);
 	}else if(iSpeed>LL_TIM_GetAutoReload(TIM4)){
@@ -43,30 +50,30 @@ uint16_t motor_setSpeed(char cMotor, int iSpeed){
 	}
 }
 
-/**
-  * @brief  With this function the direction of a motor will be changed
-  * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT), the direction cDir (FORWARD/BACKWARD)
-  * @retval The direction value
-  */
-uint16_t motor_setDirection(char cMotor,char cDir){
-	return set_dir(cMotor,cDir);
-}
+///**
+//  * @brief  With this function the direction of a motor will be changed
+//  * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT), the direction cDir (FORWARD/BACKWARD)
+//  * @retval The direction value
+//  */
+//uint16_t motor_setDirection(char cMotor,char cDir){
+//	return set_dir(cMotor,cDir);
+//}
 
-/**
-  * @brief  With this function the speed and direction of a motor will be changed
-  * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT), the direction cDir (FORWARD/BACKWARD),  iSpeed(Speed from 400-1999 @9V Motor Power Supply)
-  * @retval The CC-Value of the PWM, if anything went wrong -1
-  */
-int motor_setSpeedDir(char cMotor, char cDir, int iSpeed){
-	set_dir(cMotor,cDir);
-	if(iSpeed<SPEED_MIN){
-		return set_cc(cMotor, 0);
-	}else if(iSpeed>LL_TIM_GetAutoReload(TIM4)){
-		return set_cc(cMotor, LL_TIM_GetAutoReload(TIM4));
-	}else{
-		return set_cc(cMotor, iSpeed);
-	}
-}
+///**
+//  * @brief  With this function the speed and direction of a motor will be changed
+//  * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT), the direction cDir (FORWARD/BACKWARD),  iSpeed(Speed from 400-1999 @9V Motor Power Supply)
+//  * @retval The CC-Value of the PWM, if anything went wrong -1
+//  */
+//int motor_setSpeedDir(char cMotor, char cDir, uint16_t iSpeed){
+//	set_dir(cMotor,cDir);
+//	if(iSpeed<SPEED_MIN){
+//		return set_cc(cMotor, 0);
+//	}else if(iSpeed>LL_TIM_GetAutoReload(TIM4)){
+//		return set_cc(cMotor, LL_TIM_GetAutoReload(TIM4));
+//	}else{
+//		return set_cc(cMotor, iSpeed);
+//	}
+//}
 
 /**
   * @brief  With this function the motor stops

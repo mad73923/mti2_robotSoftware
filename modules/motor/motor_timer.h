@@ -31,7 +31,7 @@
 #include "stm32l4xx_ll_gpio.h"
 
 void motor_timer_init(void);
-uint16_t set_cc(char cMotor, int iCC);
+uint16_t set_cc(char cMotor, uint16_t iCC);
 uint16_t set_dir(char cMotor, char cDir);
 //
 #endif /* MOTOR_MOTOR_TIMER_H_ */
