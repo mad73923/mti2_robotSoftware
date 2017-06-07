@@ -6,6 +6,10 @@
  */
 #include "motor.h"
 
+
+//uint16_t motorLeftSpeed = 0;
+//uint16_t motorrightSpeed = 0;
+
 /**
   * @brief  With this function the GPIO for the direction for MotorLeft &
   * MotorRight will be configured as Output. Furthermore the Beep Output-Pin
@@ -29,11 +33,14 @@ void configure_gpio(void){
   * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT), iSpeed(Speed from 400-1999 @9V Motor Power Supply)
   * @retval The CC-Value of the PWM, if anything went wrong -1
   */
-int setSpeed(char cMotor, int iSpeed){
-	if((iSpeed<400) || (iSpeed>1999)){
-		return -1;
+uint16_t motor_setSpeed(char cMotor, int iSpeed){
+	if(iSpeed<SPEED_MIN){
+		return set_cc(cMotor, 0);
+	}else if(iSpeed>LL_TIM_GetAutoReload(TIM4)){
+		return set_cc(cMotor, LL_TIM_GetAutoReload(TIM4));
+	}else{
+		return set_cc(cMotor, iSpeed);
 	}
-	return set_cc(cMotor, iSpeed);
 }
 
 /**
@@ -41,7 +48,7 @@ int setSpeed(char cMotor, int iSpeed){
   * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT), the direction cDir (FORWARD/BACKWARD)
   * @retval The direction value
   */
-int setDirection(char cMotor,char cDir){
+uint16_t motor_setDirection(char cMotor,char cDir){
 	return set_dir(cMotor,cDir);
 }
 
@@ -50,12 +57,15 @@ int setDirection(char cMotor,char cDir){
   * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT), the direction cDir (FORWARD/BACKWARD),  iSpeed(Speed from 400-1999 @9V Motor Power Supply)
   * @retval The CC-Value of the PWM, if anything went wrong -1
   */
-int setSpeedDir(char cMotor, char cDir, int iSpeed){
-	if((iSpeed<0) || (iSpeed>100)){
-			return -1;
-	}
+int motor_setSpeedDir(char cMotor, char cDir, int iSpeed){
 	set_dir(cMotor,cDir);
-	return set_cc(cMotor,iSpeed);
+	if(iSpeed<SPEED_MIN){
+		return set_cc(cMotor, 0);
+	}else if(iSpeed>LL_TIM_GetAutoReload(TIM4)){
+		return set_cc(cMotor, LL_TIM_GetAutoReload(TIM4));
+	}else{
+		return set_cc(cMotor, iSpeed);
+	}
 }
 
 /**
@@ -63,6 +73,6 @@ int setSpeedDir(char cMotor, char cDir, int iSpeed){
   * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT)
   * @retval The CC-Value of the PWM, if anything went wrong -1
   */
-int stop(char cMotor){
-	return set_cc(cMotor,0);
+void motor_stop(char cMotor){
+	set_cc(cMotor,0);
 }

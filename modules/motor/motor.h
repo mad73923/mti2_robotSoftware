@@ -11,10 +11,10 @@
 #include "motor_timer.h"
 
 void configure_gpio(void);
-int setSpeed(char cMotor, int iSpeed);
-int setDirection(char cMotor,char cDir);
-int setSpeedDir(char cMotor, char cDir, int iSpeed);
-int stop(char cMotor);
+uint16_t motor_setSpeed(char cMotor, int iSpeed);
+uint16_t motor_setDirection(char cMotor,char cDir);
+uint16_t motor_setSpeedDir(char cMotor, char cDir, int iSpeed);
+void motor_stop(char cMotor);
 
 //
 #endif /* MOTOR_MOTOR_H_ */

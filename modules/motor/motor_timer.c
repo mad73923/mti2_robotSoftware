@@ -89,14 +89,14 @@ void motor_timer_init(void){
   * @param  cMotor (Left/Right Motor), iCC(CaptureCompare (0-100))
   * @retval None
   */
-int set_cc(char cMotor, int iCC){
+uint16_t set_cc(char cMotor, int iCC){
 
 	if(cMotor == MOTORLEFT){
 		LL_TIM_OC_SetCompareCH2(TIM3, iCC);
-		return 1;
+		return iCC;
 	}else if(cMotor == MOTORRIGHT){
 		LL_TIM_OC_SetCompareCH1(TIM4, iCC);
-		return 1;
+		return iCC;
 	}else{
 		return -1;
 	}
@@ -107,7 +107,7 @@ int set_cc(char cMotor, int iCC){
   * @param  cMotor (Left/Right Motor) cDir(Forward, Backward) iCC(CaptureCompare (0-100))
   * @retval None
   */
-int set_dir(char cMotor,char cDir){
+uint16_t set_dir(char cMotor,char cDir){
 
 	if(cMotor == MOTORLEFT){
 		if(cDir==FORWARD){
@@ -117,8 +117,8 @@ int set_dir(char cMotor,char cDir){
 			LL_GPIO_ResetOutputPin(MOTORLEFT_DIR_PORT, MOTORLEFT_DIR_PIN);
 			return BACKWARD;
 		}
-
 	}
+
 	if(cMotor == MOTORRIGHT){
 		if(cDir==FORWARD){
 			LL_GPIO_SetOutputPin(MOTORRIGHT_DIR_PORT, MOTORRIGHT_DIR_PIN);
@@ -127,6 +127,5 @@ int set_dir(char cMotor,char cDir){
 			LL_GPIO_ResetOutputPin(MOTORRIGHT_DIR_PORT, MOTORRIGHT_DIR_PIN);
 			return BACKWARD;
 		}
-
 	}
 }

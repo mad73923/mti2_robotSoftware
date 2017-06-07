@@ -24,15 +24,14 @@
 #define MOTORRIGHT						   1
 #define FORWARD							   0
 #define BACKWARD					       1
-#define NONE							   2
-#define SPEED_NONE						   2001
+#define SPEED_MIN						   400
 
 #include "stm32l4xx_ll_tim.h"
 #include "stm32l4xx_ll_bus.h"
 #include "stm32l4xx_ll_gpio.h"
 
 void motor_timer_init(void);
-int set_cc(char cMotor, int iCC);
-int set_dir(char cMotor, char cDir);
+uint16_t set_cc(char cMotor, int iCC);
+uint16_t set_dir(char cMotor, char cDir);
 //
 #endif /* MOTOR_MOTOR_TIMER_H_ */
