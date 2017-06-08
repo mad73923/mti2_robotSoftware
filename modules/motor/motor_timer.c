@@ -89,7 +89,7 @@ void motor_timer_init(void){
   * @param  cMotor (Left/Right Motor), iCC(CaptureCompare (0-100))
   * @retval None
   */
-uint16_t set_cc(char cMotor, uint16_t iCC){
+uint16_t set_cc(char cMotor, int16_t iCC){
 
 	if(cMotor == MOTORLEFT){
 		LL_TIM_OC_SetCompareCH2(TIM3, iCC);

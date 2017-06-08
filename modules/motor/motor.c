@@ -30,7 +30,7 @@ void configure_gpio(void){
   * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT), iSpeed(Speed from -1999-400 (Backwards) & +400-1999 (Forward) @9V Motor Power Supply)
   * @retval The CC-Value of the PWM, if anything went wrong -1
   */
-uint16_t motor_setSpeed(char cMotor, uint16_t iSpeed){
+uint16_t motor_setSpeed(char cMotor, int16_t iSpeed){
 
 	//Check direction
 	if(iSpeed<0){
