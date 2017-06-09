@@ -12,6 +12,7 @@
 #include "stm32l4xx_ll_gpio.h"
 #include "stm32l4xx_ll_system.h"
 #include "stm32l4xx_ll_bus.h"
+#include <math.h>
 
 /*Defines*/
 #define ADC_CALIBRATION_TIMEOUT_MS       ((uint32_t)   1)
