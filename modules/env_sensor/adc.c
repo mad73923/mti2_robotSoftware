@@ -145,7 +145,7 @@ void ADC1_2_IRQHandler(void)
   * @brief  This function maps the distance front and back values
   * 		into a distValues struct and returns it.
   * @param  None
-  * @retval None
+  * @retval Struct with distance values front and back in mm
   */
 struct distValues getFrontBackDistance(void)
 {
@@ -158,7 +158,7 @@ struct distValues getFrontBackDistance(void)
 /**
   * @brief  This function returns the front sensor value.
   * @param  None
-  * @retval None
+  * @retval Front value in mm
   */
 uint16_t getFrontSensorValue()
 {
@@ -168,7 +168,7 @@ uint16_t getFrontSensorValue()
 /**
   * @brief  This function returns the back sensor value.
   * @param  None
-  * @retval None
+  * @retval Back value in mm
   */
 uint16_t getBackSensorValue()
 {
