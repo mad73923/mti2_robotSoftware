@@ -5,8 +5,8 @@
  *      Author: felix
  */
 
-#ifndef ENV_SENSOR_SERVO__TIMER_H_
-#define ENV_SENSOR_SERVO__TIMER_H_
+#ifndef ENV_SENSOR_SERVO_TIMER_H_
+#define ENV_SENSOR_SERVO_TIMER_H_
 
 #define MOTORSERVO_PORT					   GPIOC
 #define MOTOR_GPIO_CLK_ENABLEC()		   LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOC)
@@ -19,4 +19,4 @@
 
 void servo_timer_init(void);
 
-#endif /* ENV_SENSOR_SERVO__TIMER_H_ */
+#endif /* ENV_SENSOR_SERVO_TIMER_H_ */

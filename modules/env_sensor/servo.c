@@ -17,8 +17,11 @@
   * 		If the input value is false, then -1 will be returned
   */
 int servo_set_angle(int iAngle){
-	if(iAngle < 0 || iAngle > 18){
+	if(iAngle < 0){
 		LL_TIM_OC_SetCompareCH2(TIM8, servo_set_angle(0));
+		return -1;
+	}else if(iAngle > 18){
+		LL_TIM_OC_SetCompareCH2(TIM8, servo_set_angle(18));
 		return -1;
 	}
 	LL_TIM_OC_SetCompareCH2(TIM8, sServoLUT[iAngle]);
