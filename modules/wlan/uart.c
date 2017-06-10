@@ -292,6 +292,7 @@ void USART_RecieveCallback(void){
 
 const char* UARTCheckForIPD(void){
 	const char* returnval = NULL;
+	memset(IPDBuffer,0,sizeof(IPDBuffer));
 	uint8_t length = 0;
 		if(Lines>0 && strstr(RxBuffer,"+IPD,")){
 			char *ptrComma, *ptrDoppelpkt ;

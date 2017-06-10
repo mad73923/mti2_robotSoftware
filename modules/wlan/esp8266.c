@@ -146,7 +146,7 @@ uint8_t ESP8266handleConnectionsWithHtml(void){
 		buffer2[1] = '\0';
 		strcat(buffer,buffer2);
 		strcat(buffer,",");
-		sprintf(buffer2,"%d\0",strlen(webpage));
+		sprintf(buffer2,"%d",strlen(webpage));
 		strcat(buffer,buffer2);
 		strcat(buffer,"\r\n");
 		UARTStartTransfers(buffer);
@@ -183,6 +183,12 @@ uint8_t ESP8266connectToTCPserver(const char* IP, const char* Port){
 	if(returnval!=0){
 		return returnval;
 	}
+	UARTStartTransfers("AT+CIPCLOSE\r\n");
+	UARTwaitEndOfTransfer();
+	returnval = UARTwaitForOkOrError(100000);
+	if(returnval==0){
+		debug_printf("TCP-Connection closed!\r\n");
+	}
 	debug_printf("Setting multiple connections disable successful!\n\r");
 	strcpy(buffer,"AT+CIPSTART=\"TCP\",\""); //192.168.101.110", 1000");
 	strcat(buffer,IP);
@@ -210,7 +216,7 @@ uint8_t ESP8266sendUID(const char* UID){
 	char buffer[80];
 	char buffer2[5];
 	strcpy(buffer,"AT+CIPSEND=");
-	sprintf(buffer2,"%d\0",strlen(UID)+4);
+	sprintf(buffer2,"%d",strlen(UID)+4);
 	strcat(buffer,buffer2);
 	strcat(buffer,"\r\n");
 	UARTStartTransfers(buffer);
@@ -236,7 +242,7 @@ uint8_t ESP8266sendDistances(uint16_t Dist[],uint16_t cntDistanceVal){
 	char bufferMessage[1450];
 	char buffer[80];
 	char buffer2[10];
-	strcpy(bufferMessage,"ActDist=[");
+	strcpy(bufferMessage,"ActDistances=[");
 	for(int i =0;i<cntDistanceVal;i++){
 		if(i<(cntDistanceVal-1)){
 			sprintf(buffer2,"%d,",Dist[i]);
@@ -267,20 +273,20 @@ uint8_t ESP8266sendDistances(uint16_t Dist[],uint16_t cntDistanceVal){
 	return returnval;
 }
 
-uint8_t ESP8266sendPos(uint32_t xPos,uint32_t yPos,float angle){
+uint8_t ESP8266sendPos(int32_t xPos,int32_t yPos,float angle){
 	uint8_t returnval = 0;
 	char bufferMessage[80];
 	char buffer[80];
 	char buffer2[5];
 	strcpy(bufferMessage,"ActPos=");
-	sprintf(buffer2,"%d,",xPos);
+	sprintf(buffer2,"%ld,",xPos);
 	strcat(bufferMessage,buffer2);
-	sprintf(buffer2,"%d,",yPos);
+	sprintf(buffer2,"%ld,",yPos);
 	strcat(bufferMessage,buffer2);
 	sprintf(buffer2,"%.1f",angle);
 	strcat(bufferMessage,buffer2);
 	strcpy(buffer,"AT+CIPSEND=");
-	sprintf(buffer2,"%d\0",strlen(bufferMessage));
+	sprintf(buffer2,"%d",strlen(bufferMessage));
 	strcat(buffer,buffer2);
 	strcat(buffer,"\r\n");
 	UARTStartTransfers(buffer);
@@ -299,4 +305,25 @@ uint8_t ESP8266sendPos(uint32_t xPos,uint32_t yPos,float angle){
 	return returnval;
 }
 
-
+uint8_t ESP8266sendTCPmessage(const char* Message){
+	uint8_t returnval = 0;
+	char buffer[80];
+	char buffer2[5];
+	strcpy(buffer,"AT+CIPSEND=");
+	sprintf(buffer2,"%d\r\n",strlen(Message));
+	strcat(buffer,buffer2);
+	UARTStartTransfers(buffer);
+	UARTwaitEndOfTransfer();
+	returnval = UARTwaitForStartIndicator(100000);
+	if(returnval!=0){
+		return returnval;
+	}
+	debug_printf("Sending Message...\n\r");
+	UARTStartTransfers(Message);
+	UARTwaitEndOfTransfer();
+	returnval = UARTwaitForSendOK(10000);
+		if(returnval!=0){
+			return returnval;
+		}
+	return returnval;
+}

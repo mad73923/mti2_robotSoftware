@@ -43,6 +43,10 @@ uint8_t WLANsendDistances(uint16_t Dist[], uint16_t cntDistanceVal){
 	return ESP8266sendDistances(Dist, cntDistanceVal);
 }
 
-uint8_t WLANsendPos(uint32_t xPos,uint32_t yPos,float angle){
+uint8_t WLANsendPos(int32_t xPos,int32_t yPos,float angle){
 	return ESP8266sendPos(xPos,yPos,angle);
+}
+
+uint8_t WLANsendTCPmessage(const char* Message){
+	return ESP8266sendTCPmessage(Message);
 }

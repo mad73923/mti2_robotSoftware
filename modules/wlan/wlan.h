@@ -10,6 +10,7 @@
 
 #include "esp8266.h"
 
+
 void WLANinit();
 
 
@@ -21,7 +22,8 @@ const char* WLANgetIncomingTCPdata(void);
 uint8_t WLANconnectToTCPserver(const char* IP, const char* Port);
 uint8_t WLANsendUID(const char* UID);
 uint8_t WLANsendDistances(uint16_t Dist[], uint16_t cntDistanceVal);
-uint8_t WLANsendPos(uint32_t xPos,uint32_t yPos,float angle);
+uint8_t WLANsendPos(int32_t xPos,int32_t yPos,float angle);
+uint8_t WLANsendTCPmessage(const char* Message);
 
 
 #endif /* WLAN_WLAN_H_ */
