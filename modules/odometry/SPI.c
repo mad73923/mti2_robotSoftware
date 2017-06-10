@@ -10,10 +10,14 @@
 uint16_t* dataTX;
 uint32_t nbDataToTransmit;
 volatile uint32_t nbIndexTransmit;
+void (*TLE_SPI_Tx_done)(void);
 
 uint16_t* dataRX;
 uint32_t nbDataToReceive;
 volatile uint32_t nbIndexReceive;
+void (*TLE_SPI_Rx_done)(void);
+
+void (*SPI_communicate_async_done_callback)(void);
 
 /*
  * Private function prototypes
@@ -22,6 +26,17 @@ volatile uint32_t nbIndexReceive;
 void TLE_SPI_Tx_Callback(void);
 void TLE_SPI_Rx_Callback(void);
 void SPI_cleanRXBuffer(void);
+void SPI_setParamsToVariables(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pdataRX, uint32_t ndataRX);
+
+void SPI_setTxDoneCallback(void* callback);
+void SPI_resetTxDoneCallback(void);
+void SPI_setRxDoneCallback(void* callback);
+void SPI_resetRxDoneCallback(void);
+void SPI_communicate_async_TxDoneCallback(void);
+void SPI_communicate_async_RxDoneCallback(void);
+
+void SPI_enableTX(void);
+void SPI_enableRX(void);
 
 /*
  * Public functions
@@ -74,30 +89,27 @@ void SPI_init(void){
 }
 
 void SPI_communicate_sync(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pdataRX, uint32_t ndataRX){
-	dataTX = pdataTX;
-	dataRX = pdataRX;
-	nbDataToReceive = ndataRX;
-	nbDataToTransmit = ndataTX;
-	nbIndexReceive = 0;
-	nbIndexTransmit = 0;
+	SPI_setParamsToVariables(pdataTX, ndataTX, pdataRX, ndataRX);
 
-	LL_SPI_EnableIT_TXE(TLE_SPI_INST);
-	LL_SPI_SetTransferDirection(TLE_SPI_INST, LL_SPI_HALF_DUPLEX_TX);
-	LL_SPI_Enable(TLE_SPI_INST);
+	SPI_enableTX();
 	while(nbIndexTransmit<nbDataToTransmit);
-	while(LL_SPI_IsActiveFlag_BSY(TLE_SPI_INST));
+	SPI_waitForClearance();
 
 
 	LL_SPI_Disable(TLE_SPI_INST);
-	if(ndataRX > 0){
-		LL_SPI_SetTransferDirection(TLE_SPI_INST, LL_SPI_HALF_DUPLEX_RX);
-		SPI_cleanRXBuffer();
-		LL_SPI_EnableIT_RXNE(TLE_SPI_INST);
-		LL_SPI_Enable(TLE_SPI_INST);
-
+	if(nbDataToReceive > 0){
+		SPI_enableRX();
 		while(nbIndexReceive<nbDataToReceive);
 		LL_SPI_Disable(TLE_SPI_INST);
 	}
+}
+
+void SPI_communicate_async(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pdataRX, uint32_t ndataRX, void* doneCallback){
+	SPI_setParamsToVariables(pdataTX, ndataTX, pdataRX, ndataRX);
+	SPI_setTxDoneCallback(SPI_communicate_async_TxDoneCallback);
+	SPI_setRxDoneCallback(SPI_communicate_async_RxDoneCallback);
+	SPI_communicate_async_done_callback = doneCallback;
+	SPI_enableTX();
 }
 
 void SPI_waitForClearance(void){
@@ -107,6 +119,68 @@ void SPI_waitForClearance(void){
 /*
  * Private functions
  */
+
+void SPI_setParamsToVariables(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pdataRX, uint32_t ndataRX){
+	dataTX = pdataTX;
+	dataRX = pdataRX;
+	nbDataToReceive = ndataRX;
+	nbDataToTransmit = ndataTX;
+	nbIndexReceive = 0;
+	nbIndexTransmit = 0;
+}
+
+void SPI_communicate_async_TxDoneCallback(void){
+	// needed??
+	SPI_waitForClearance();
+	LL_SPI_Disable(TLE_SPI_INST);
+	if(nbDataToReceive>0){
+		SPI_enableRX();
+	}else{
+		SPI_resetRxDoneCallback();
+		SPI_resetTxDoneCallback();
+		if(SPI_communicate_async_done_callback != 0){
+			SPI_communicate_async_done_callback();
+		}
+	}
+}
+
+void SPI_communicate_async_RxDoneCallback(void){
+	SPI_resetRxDoneCallback();
+	SPI_resetTxDoneCallback();
+	LL_SPI_Disable(TLE_SPI_INST);
+	if(SPI_communicate_async_done_callback != 0){
+		SPI_communicate_async_done_callback();
+	}
+}
+
+void SPI_setTxDoneCallback(void* callback){
+	TLE_SPI_Tx_done = callback;
+}
+
+void SPI_resetTxDoneCallback(void){
+	TLE_SPI_Tx_done = 0;
+}
+
+void SPI_setRxDoneCallback(void* callback){
+	TLE_SPI_Rx_done = callback;
+}
+
+void SPI_resetRxDoneCallback(void){
+	TLE_SPI_Rx_done = 0;
+}
+
+void SPI_enableTX(void){
+	LL_SPI_EnableIT_TXE(TLE_SPI_INST);
+	LL_SPI_SetTransferDirection(TLE_SPI_INST, LL_SPI_HALF_DUPLEX_TX);
+	LL_SPI_Enable(TLE_SPI_INST);
+}
+
+void SPI_enableRX(void){
+	LL_SPI_SetTransferDirection(TLE_SPI_INST, LL_SPI_HALF_DUPLEX_RX);
+	SPI_cleanRXBuffer();
+	LL_SPI_EnableIT_RXNE(TLE_SPI_INST);
+	LL_SPI_Enable(TLE_SPI_INST);
+}
 
 void SPI_cleanRXBuffer(void){
 	while(LL_SPI_IsActiveFlag_RXNE(TLE_SPI_INST))
@@ -120,6 +194,9 @@ void TLE_SPI_Tx_Callback(void){
 		nbIndexTransmit++;
 	}else{
 		LL_SPI_DisableIT_TXE(TLE_SPI_INST);
+		if(TLE_SPI_Tx_done != 0){
+			TLE_SPI_Tx_done();
+		}
 	}
 }
 
@@ -129,6 +206,9 @@ void TLE_SPI_Rx_Callback(void){
 		nbIndexReceive++;
 	}else{
 		LL_SPI_DisableIT_RXNE(TLE_SPI_INST);
+		if(TLE_SPI_Rx_done != 0){
+			TLE_SPI_Rx_done();
+		}
 	}
 }
 

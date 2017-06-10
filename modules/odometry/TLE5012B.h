@@ -26,8 +26,10 @@
  */
 
 #define TLE5012B_RW_POS			15
-#define TLE5012B_RW_READ		0x01
-#define TLE5012B_RW_WRITE		0x00
+typedef enum{
+	TLE_WRITE	= 0x00,
+	TLE_READ	= 0x01
+}TLE5012B_RW_t;
 
 #define TLE5012B_LOCK_POS		11
 #define TLE5012B_LOCK_0_4		0b0000

@@ -15,6 +15,8 @@ void CS_init(void);
 void CS_activateLeft(void);
 void CS_resetAll(void);
 
+void prepareTXBuffer(TLE5012B_REG_t reg, TLE5012B_RW_t readOrWrite, uint16_t* txBuffer);
+
 /*
  * Public functions
  */
@@ -33,21 +35,9 @@ uint16_t sensor_readRegister(TLE5012B_REG_t reg, TLE5012B_ACT_t side){
 	uint16_t rxBuffer = 0;
 	uint16_t txBuffer = 0;
 
-	txBuffer |= TLE5012B_RW_READ<<TLE5012B_RW_POS;
+	prepareTXBuffer(reg, TLE_READ, &txBuffer);
 
-	if(reg<0x05){
-		txBuffer |= TLE5012B_LOCK_0_4<<TLE5012B_LOCK_POS;
-	}else{
-		txBuffer |= TLE5012B_LOCK_5_11<<TLE5012B_LOCK_POS;
-	}
-
-	txBuffer |= reg << TLE5012B_ADDR_POS;
-
-	txBuffer |= 0x01 << TLE5012B_ND_POS;
-
-	if(side == TLE_LEFT){
-		CS_activateLeft();
-	}
+	CS_activateSide(side);
 
 	SPI_communicate_sync(&txBuffer, 1, &rxBuffer, 1);
 
@@ -62,26 +52,28 @@ void sensor_writeRegister(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT_t sid
 	txBuffer[0] = 0;
 	txBuffer[1] = value;
 
-	txBuffer[0] |= TLE5012B_RW_WRITE << TLE5012B_RW_POS;
+	prepareTXBuffer(reg, TLE_WRITE, &txBuffer[0]);
 
-	if(reg<0x05){
-		txBuffer[0] |= TLE5012B_LOCK_0_4<<TLE5012B_LOCK_POS;
-	}else{
-		txBuffer[0] |= TLE5012B_LOCK_5_11<<TLE5012B_LOCK_POS;
-	}
+	CS_activateSide(side);
 
-	txBuffer[0] |= reg << TLE5012B_ADDR_POS;
-	txBuffer[0] |= 0x01 << TLE5012B_ND_POS;
-
-	if(side == TLE_LEFT){
-		CS_activateLeft();
-	}
-
-	SPI_communicate_sync(&txBuffer[0], 2, 0, 1);
+	SPI_communicate_sync(&txBuffer[0], 2, 0, 0);
 
 	CS_resetAll();
 
 	return;
+}
+
+void sensor_writeRegister_async(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT_t side){
+	SPI_waitForClearance();
+	uint16_t txBuffer[2];
+	txBuffer[0] = 0;
+	txBuffer[1] = value;
+
+	prepareTXBuffer(reg, TLE_WRITE, &txBuffer[0]);
+
+	CS_activateSide(side);
+
+	SPI_communicate_async(&txBuffer[0], 2, 0, 0, CS_resetAll);
 }
 
 float sensor_getAngle(TLE5012B_ACT_t side){
@@ -133,6 +125,19 @@ void sensor_setAngleTo0(TLE5012B_ACT_t side){
  * Private functions
  */
 
+void prepareTXBuffer(TLE5012B_REG_t reg, TLE5012B_RW_t readOrWrite, uint16_t* txBuffer){
+	txBuffer[0] |= readOrWrite << TLE5012B_RW_POS;
+
+	if(reg<0x05){
+		txBuffer[0] |= TLE5012B_LOCK_0_4<<TLE5012B_LOCK_POS;
+	}else{
+		txBuffer[0] |= TLE5012B_LOCK_5_11<<TLE5012B_LOCK_POS;
+	}
+
+	txBuffer[0] |= reg << TLE5012B_ADDR_POS;
+	txBuffer[0] |= 0x01 << TLE5012B_ND_POS;
+}
+
 /*
  * @brief	This function configures the CS pins.
  */
@@ -141,6 +146,12 @@ void CS_init(void){
 	LL_GPIO_SetPinMode(TLE5012B_CS_PORT_L, TLE5012B_CS_PIN_L, LL_GPIO_MODE_OUTPUT);
 	LL_GPIO_SetPinSpeed(TLE5012B_CS_PORT_L, TLE5012B_CS_PIN_L, LL_GPIO_SPEED_FREQ_VERY_HIGH);
 	LL_GPIO_SetOutputPin(TLE5012B_CS_PORT_L, TLE5012B_CS_PIN_L);
+}
+
+void CS_activateSide(TLE5012B_ACT_t side){
+	if(side == TLE_LEFT){
+		CS_activateLeft();
+	}
 }
 
 void CS_activateLeft(void){
