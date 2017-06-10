@@ -142,6 +142,18 @@ void UARTwaitEndOfTransfer(void)
   LL_DMA_DisableChannel(WLAN_UART_TX_DMA_INST, WLAN_UART_TX_DMA_CH);
 }
 
+uint8_t UARTcheckEndOfTransfer(void)
+{
+  /* 1 - Wait end of transmission */
+  if (TransmissionComplete != 1)
+  {
+	  return 1;
+  }
+  /* Disable DMA1 Tx Channel */
+  LL_DMA_DisableChannel(WLAN_UART_TX_DMA_INST, WLAN_UART_TX_DMA_CH);
+  return 0;
+}
+
 
 /* wartet auf ein "OK" vom ESP8266 oder ein "ERROR" und liefert einen Zahlenwert zurück:
  * return 0: "OK" wurde empfangen
@@ -201,6 +213,22 @@ for(int i=0; i<cyclesTimeout; i++){
 	return 2;
 }
 
+uint8_t UARTcheckForStartIndicator(void){
+	if(strstr(RxBuffer,">")){
+		memset(RxBuffer,0,sizeof(RxBuffer));
+		Lines = 0;
+		Characters = 0;
+		return 0;
+	}
+	if(strstr(RxBuffer,"ERROR")){
+			memset(RxBuffer,0,sizeof(RxBuffer));
+			Lines = 0;
+			Characters = 0;
+			return 2;
+	}
+	return 1;
+}
+
 uint8_t UARTwaitForReady(uint32_t cyclesTimeout){
 for(int i=0; i<cyclesTimeout; i++){
 		if(strstr(RxBuffer,"ready")){
@@ -240,6 +268,31 @@ for(int i=0; i<cyclesTimeout; i++){
 	Lines = 0;
 	Characters = 0;
 	return 2;
+}
+
+uint8_t UARTcheckForSendOK(void){
+	if(strstr(RxBuffer,"SEND OK")){
+		//debug_printf("OK recieved\n\r");
+		memset(RxBuffer,0,sizeof(RxBuffer));
+		Lines = 0;
+		Characters = 0;
+		return 0;
+	}
+	if(strstr(RxBuffer,"FAILED")){
+		debug_printf("Failed recieved\n\r");
+		memset(RxBuffer,0,sizeof(RxBuffer));
+		Lines = 0;
+		Characters = 0;
+		return 2;
+	}
+	if(strstr(RxBuffer,"ERROR")){
+		debug_printf("Failed recieved\n\r");
+		memset(RxBuffer,0,sizeof(RxBuffer));
+		Lines = 0;
+		Characters = 0;
+		return 2;
+	}
+	return 1;
 }
 
 void WLAN_UART_TX_DMA_HANDLER()

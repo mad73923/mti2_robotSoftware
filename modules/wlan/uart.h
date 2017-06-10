@@ -26,6 +26,9 @@ uint8_t UARTwaitForStartIndicator(uint32_t cyclesTimeout);
 uint8_t UARTwaitForSendOK(uint32_t cyclesTimeout);
 uint8_t UARTwaitForReady(uint32_t cyclesTimeout);
 const char* UARTCheckForIPD(void);
+uint8_t UARTcheckForStartIndicator(void);
+uint8_t UARTcheckForSendOK(void);
+uint8_t UARTcheckEndOfTransfer(void);
 
 //CLK
 #define WLAN_UART_GPIO_CLK_ENABLE()	LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOC)

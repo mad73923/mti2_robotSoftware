@@ -10,6 +10,7 @@
 
 #include "uart.h"
 #include "../modules/debug/debug.h"
+#include "../modules/uid/uid.h"
 
 void ESP8266init();
 
@@ -23,6 +24,8 @@ uint8_t ESP8266sendUID(const char* UID);
 uint8_t ESP8266sendDistances(uint16_t Dist[],uint16_t cntDistanceVal);
 uint8_t ESP8266sendPos(int32_t xPos,int32_t yPos,float angle);
 uint8_t ESP8266sendTCPmessage(const char* Message);
+uint8_t ESP8266handleTCP(void);
+uint16_t* generateDistances(void);
 
 
 

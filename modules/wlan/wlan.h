@@ -24,6 +24,7 @@ uint8_t WLANsendUID(const char* UID);
 uint8_t WLANsendDistances(uint16_t Dist[], uint16_t cntDistanceVal);
 uint8_t WLANsendPos(int32_t xPos,int32_t yPos,float angle);
 uint8_t WLANsendTCPmessage(const char* Message);
+uint8_t WLANhandleTCP(void);
 
 
 #endif /* WLAN_WLAN_H_ */

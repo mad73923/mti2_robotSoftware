@@ -50,3 +50,7 @@ uint8_t WLANsendPos(int32_t xPos,int32_t yPos,float angle){
 uint8_t WLANsendTCPmessage(const char* Message){
 	return ESP8266sendTCPmessage(Message);
 }
+
+uint8_t WLANhandleTCP(void){
+	return ESP8266handleTCP();
+}

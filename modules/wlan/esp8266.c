@@ -327,3 +327,209 @@ uint8_t ESP8266sendTCPmessage(const char* Message){
 		}
 	return returnval;
 }
+
+enum TCP_state {waiting_for_data,
+	wait_for_UID_startindicator,
+	wait_for_UID_SEND_OK,
+	wait_for_Pos_startindicator,
+	wait_for_Pos_SEND_OK,
+	wait_for_Dist_startindicator,
+	wait_for_Dist_SEND_OK,};
+enum TCP_state actTCPstate = waiting_for_data;
+
+char TCPbuffer[1450];
+char TCPbuffer2[5];
+char TCPbuffer3[20];
+
+uint8_t ESP8266handleTCP(void){
+
+	uint8_t temp = 0;
+	switch(actTCPstate){
+	case waiting_for_data:{
+		const char* ptrMessage = ESP8266getIncomingTCPdata();
+		if(ptrMessage==NULL){break;}				//if no new data recieved return
+		debug_printf("Data revieved: %s\n\r", ptrMessage );		//else send recieved message over debug-uart
+
+		if(strcmp(ptrMessage,"GetUID?")==0){
+			debug_printf("Robot was asked for UID\n\r");
+			strcpy(TCPbuffer,"AT+CIPSEND=");
+			sprintf(TCPbuffer2,"%d",strlen(uid_getUIDString())+4);
+			strcat(TCPbuffer,TCPbuffer2);
+			strcat(TCPbuffer,"\r\n");
+			debug_printf(TCPbuffer);
+			UARTStartTransfers(TCPbuffer);
+			actTCPstate = wait_for_UID_startindicator;
+			break;
+		}
+
+		if(strcmp(ptrMessage,"GetPos?")==0){
+			debug_printf("Robot was asked for Pos\n\r");
+			strcpy(TCPbuffer,"ActPos=");
+			sprintf(TCPbuffer2,"%ld,",123);
+			strcat(TCPbuffer,TCPbuffer2);
+			sprintf(TCPbuffer2,"%ld,",345);
+			strcat(TCPbuffer,TCPbuffer2);
+			sprintf(TCPbuffer2,"%.1f",67.8);
+			strcat(TCPbuffer,TCPbuffer2);
+			strcpy(TCPbuffer3,"AT+CIPSEND=");
+			sprintf(TCPbuffer2,"%d",strlen(TCPbuffer));
+			strcat(TCPbuffer3,TCPbuffer2);
+			strcat(TCPbuffer3,"\r\n");
+			UARTStartTransfers(TCPbuffer3);
+			actTCPstate = wait_for_Pos_startindicator;
+			break;
+		}
+
+		if(strcmp(ptrMessage,"GetDistances?")==0){
+			debug_printf("Robot was asked for Distances\n\r");
+			strcpy(TCPbuffer,"ActDistances=[");
+			uint16_t Dist[36];
+			for(int i=0;i<36;i++){
+					Dist[i] = i*20;
+			}
+			for(int i =0;i<36;i++){
+				if(i<(36-1)){
+					sprintf(TCPbuffer2,"%d,",Dist[i]);
+				}
+				else{
+					sprintf(TCPbuffer2,"%d]",Dist[i]);
+				}
+				strcat(TCPbuffer,TCPbuffer2);
+			}
+			strcpy(TCPbuffer3,"AT+CIPSEND=");
+			sprintf(TCPbuffer2,"%d",strlen(TCPbuffer));
+			strcat(TCPbuffer3,TCPbuffer2);
+			strcat(TCPbuffer3,"\r\n");
+			UARTStartTransfers(TCPbuffer3);
+			actTCPstate = wait_for_Dist_startindicator;
+			break;
+		}
+		debug_printf("Recieved not known command!");
+		break;
+	}
+
+	case wait_for_UID_startindicator:{
+		if(UARTcheckEndOfTransfer()==1){
+			break;	//if not completely sent
+		}
+		temp = UARTcheckForStartIndicator();
+		if(temp==1){	//If no > and no ERROR was recieved return
+			break;
+		}
+		if(temp==2){	//If ERROR was recieved
+			debug_printf("ERROR recieved when trying to send UID!\n\r");
+			actTCPstate = waiting_for_data;
+			break;
+		}
+		//if > recieved start sending UID
+		debug_printf("Start sending UID...\n\r");
+		strcpy(TCPbuffer,"UID=");
+		strcat(TCPbuffer,uid_getUIDString());
+		//debug_printf(buffer);
+		UARTStartTransfers(TCPbuffer);
+		actTCPstate = wait_for_UID_SEND_OK;
+		break;
+	}
+
+	case wait_for_UID_SEND_OK:{
+		if(UARTcheckEndOfTransfer()==1){
+			break;	//if not completely sent
+		}
+		temp = UARTcheckForSendOK();
+		if(temp==1){	//no SendOk, FAILED or ERROR was recieved
+			//debug_printf("waiting!\n\r");
+			break;
+		}
+		if(temp==2){
+			debug_printf("ERROR/Failed recieved when trying to send UID!\n\r");
+			actTCPstate = waiting_for_data;
+			break;
+		}
+		//If SEND OK was revieved
+		debug_printf("UID was sent!\n\r");
+		actTCPstate = waiting_for_data;
+		break;
+	}
+	case wait_for_Pos_startindicator:{
+		if(UARTcheckEndOfTransfer()==1){
+			break;	//if not completely sent
+		}
+		temp = UARTcheckForStartIndicator();
+		if(temp==1){	//If no > and no ERROR was recieved return
+			break;
+		}
+		if(temp==2){	//If ERROR was recieved
+			debug_printf("ERROR recieved when trying to send Pos!\n\r");
+			actTCPstate = waiting_for_data;
+			break;
+		}
+		//if > recieved start sending UID
+		debug_printf("Start sending Pos...\n\r");
+		UARTStartTransfers(TCPbuffer);
+		actTCPstate = wait_for_Pos_SEND_OK;
+		break;
+	}
+	case wait_for_Pos_SEND_OK:{
+		if(UARTcheckEndOfTransfer()==1){
+			break;	//if not completely sent
+		}
+		temp = UARTcheckForSendOK();
+		if(temp==1){	//no SendOk, FAILED or ERROR was recieved
+			//debug_printf("waiting!\n\r");
+			break;
+		}
+		if(temp==2){
+			debug_printf("ERROR/Failed recieved when trying to send Pos!\n\r");
+			actTCPstate = waiting_for_data;
+			break;
+		}
+		//If SEND OK was revieved
+		debug_printf("Pos was sent!\n\r");
+		actTCPstate = waiting_for_data;
+		break;
+	}
+
+	case wait_for_Dist_startindicator:{
+		if(UARTcheckEndOfTransfer()==1){
+			break;	//if not completely sent
+		}
+		temp = UARTcheckForStartIndicator();
+		if(temp==1){	//If no > and no ERROR was recieved return
+			break;
+		}
+		if(temp==2){	//If ERROR was recieved
+			debug_printf("ERROR recieved when trying to send Distances!\n\r");
+			actTCPstate = waiting_for_data;
+			break;
+		}
+		//if > recieved start sending UID
+		debug_printf("Start sending Distances...\n\r");
+		debug_printf(TCPbuffer);
+		UARTStartTransfers(TCPbuffer);
+		actTCPstate = wait_for_Dist_SEND_OK;
+		break;
+	}
+	case wait_for_Dist_SEND_OK:{
+		if(UARTcheckEndOfTransfer()==1){
+			break;	//if not completely sent
+		}
+		temp = UARTcheckForSendOK();
+		if(temp==1){	//no SendOk, FAILED or ERROR was recieved
+			//debug_printf("waiting!\n\r");
+			break;
+		}
+		if(temp==2){
+			debug_printf("ERROR/Failed recieved when trying to send Distances!\n\r");
+			actTCPstate = waiting_for_data;
+			break;
+		}
+		//If SEND OK was revieved
+		debug_printf("Distances sent!\n\r");
+		actTCPstate = waiting_for_data;
+		break;
+	}
+
+	}
+	return actTCPstate;
+}
+
