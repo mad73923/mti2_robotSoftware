@@ -56,7 +56,7 @@ void sensor_writeRegister(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT_t sid
 
 	CS_activateSide(side);
 
-	SPI_communicate_sync(&txBuffer[0], 2, 0, 0);
+	SPI_communicate_sync(&txBuffer[0], 2, 0, 1);
 
 	CS_resetAll();
 
