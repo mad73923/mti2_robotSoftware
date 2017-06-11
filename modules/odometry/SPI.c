@@ -84,8 +84,6 @@ void SPI_init(void){
 	LL_SPI_EnableIT_TXE(TLE_SPI_INST);
 	/* Enable RXNE   Interrupt */
 	LL_SPI_EnableIT_RXNE(TLE_SPI_INST);
-	/* Enable TLE_SPI_INST Error Interrupt */
-	LL_SPI_EnableIT_ERR(TLE_SPI_INST);
 }
 
 void SPI_communicate_sync(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pdataRX, uint32_t ndataRX){
