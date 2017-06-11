@@ -15,6 +15,7 @@
 void SPI_init(void);
 
 void SPI_communicate_sync(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pdataRX, uint32_t ndataRX);
+void SPI_communicate_async(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pdataRX, uint32_t ndataRX, void* doneCallback);
 void SPI_waitForClearance(void);
 
 #define TLE_SPI_INST		SPI1

@@ -218,12 +218,12 @@ void TLE_SPI_Rx_Callback(void){
 
 void TLE_SPI_IRQ_HANDLER(void){
 	/* Check TXE flag value in ISR register */
-	if(LL_SPI_IsActiveFlag_TXE(TLE_SPI_INST)){
+	if(LL_SPI_IsActiveFlag_TXE(TLE_SPI_INST) && LL_SPI_IsEnabledIT_TXE(TLE_SPI_INST)){
 		/* Call function Master Transmission Callback */
 		TLE_SPI_Tx_Callback();
 	}
 	/* Check RXNE flag value in ISR register */
-	if(LL_SPI_IsActiveFlag_RXNE(TLE_SPI_INST)){
+	if(LL_SPI_IsActiveFlag_RXNE(TLE_SPI_INST) && LL_SPI_IsEnabledIT_RXNE(TLE_SPI_INST)){
 		/* Call function Slave Reception Callback */
 		TLE_SPI_Rx_Callback();
 	}

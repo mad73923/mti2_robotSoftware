@@ -73,7 +73,7 @@ void sensor_writeRegister_async(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT
 
 	CS_activateSide(side);
 
-	SPI_communicate_async(&txBuffer[0], 2, 0, 0, CS_resetAll);
+	SPI_communicate_async(&txBuffer[0], 2, 0, 1, CS_resetAll);
 }
 
 float sensor_getAngle(TLE5012B_ACT_t side){
