@@ -22,4 +22,6 @@ void odometry_init(void);
 odo_angles odometry_getAngles(void);
 odo_revs odometry_getRevolutions(void);
 
+void odometry_updateAngles(void);
+
 #endif /* ODOMETRY_ODOMETRY_H_ */

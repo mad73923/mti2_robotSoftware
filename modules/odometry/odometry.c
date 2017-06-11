@@ -7,14 +7,18 @@
 
 #include "odometry.h"
 
+odo_angles angles;
+
 void odometry_init(void){
 	sensor_init();
 }
 
+void odometry_updateAngles(void){
+	sensor_getAngle_async(TLE_LEFT, &angles.angleWheel_l);
+}
+
 odo_angles odometry_getAngles(void){
-	odo_angles ret;
-	ret.angleWheel_l = sensor_getAngle(TLE_LEFT);
-	return ret;
+	return angles;
 }
 
 odo_revs odometry_getRevolutions(void){

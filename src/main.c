@@ -17,6 +17,7 @@ int main(void){
 	odometry_init();
 
 	while(1){
+		odometry_updateAngles();
 		revs = odometry_getRevolutions();
 		ang = odometry_getAngles();
 
