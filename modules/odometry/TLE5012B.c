@@ -14,6 +14,7 @@
 void CS_init(void);
 void CS_activateLeft(void);
 void CS_resetAll(void);
+void CS_activateSide(TLE5012B_ACT_t side);
 
 void prepareTXBuffer(TLE5012B_REG_t reg, TLE5012B_RW_t readOrWrite, uint16_t* txBuffer);
 
@@ -96,11 +97,11 @@ int16_t sensor_getRevolutions(TLE5012B_ACT_t side){
 }
 
 void sensor_hardwareReset(TLE5012B_ACT_t side){
-	sensor_writeRegister(ACSTAT, TLE5012B_AS_RST, side);
+	sensor_writeRegister_async(ACSTAT, TLE5012B_AS_RST, side);
 }
 
 void sensor_disableCRCMonitoring(TLE5012B_ACT_t side){
-	sensor_writeRegister(ACSTAT, TLE5012B_AS_FUSE, side);
+	sensor_writeRegister_async(ACSTAT, TLE5012B_AS_FUSE, side);
 }
 
 void sensor_setAngleTo0(TLE5012B_ACT_t side){
@@ -118,7 +119,7 @@ void sensor_setAngleTo0(TLE5012B_ACT_t side){
 		}
 	int16_t newVal = baseVal - val;
 	newVal = newVal<<4;
-	sensor_writeRegister(MOD_3, newVal, side);
+	sensor_writeRegister_async(MOD_3, newVal, side);
 }
 
 /*
