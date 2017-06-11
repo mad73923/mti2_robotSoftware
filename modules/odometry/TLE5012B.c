@@ -32,18 +32,18 @@ void sensor_init(void){
 
 uint16_t sensor_readRegister(TLE5012B_REG_t reg, TLE5012B_ACT_t side){
 	SPI_waitForClearance();
-	uint16_t rxBuffer = 0;
+	uint16_t rxBuffer[2];
 	uint16_t txBuffer = 0;
 
 	prepareTXBuffer(reg, TLE_READ, &txBuffer);
 
 	CS_activateSide(side);
 
-	SPI_communicate_sync(&txBuffer, 1, &rxBuffer, 1);
+	SPI_communicate_sync(&txBuffer, 1, &rxBuffer[0], 2);
 
 	CS_resetAll();
 
-	return rxBuffer;
+	return rxBuffer[0];
 }
 
 void sensor_writeRegister(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT_t side){
