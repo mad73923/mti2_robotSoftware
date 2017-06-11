@@ -8,6 +8,15 @@
 #include "TLE5012B.h"
 
 /*
+ * Variables
+ */
+
+void (*readRegister_async_callback)(uint16_t);
+uint16_t readRegister_async_RXBuffer[2];
+
+float* asyncGetAngle;
+
+/*
  * Private function prototypes
  */
 
@@ -16,7 +25,18 @@ void CS_activateLeft(void);
 void CS_resetAll(void);
 void CS_activateSide(TLE5012B_ACT_t side);
 
+uint16_t sensor_readRegister(TLE5012B_REG_t reg, TLE5012B_ACT_t side);
+void sensor_readRegister_async(TLE5012B_REG_t reg, TLE5012B_ACT_t side, void (*callback)(uint16_t));
+void readRegister_async_done(void);
+
+void sensor_writeRegister(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT_t side);
+void sensor_writeRegister_async(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT_t side);
+
+void sensor_getAngle_async_callback(uint16_t registerValue);
+
 void prepareTXBuffer(TLE5012B_REG_t reg, TLE5012B_RW_t readOrWrite, uint16_t* txBuffer);
+
+float calculateAngleValue(uint16_t registerValue);
 
 /*
  * Public functions
@@ -31,60 +51,15 @@ void sensor_init(void){
 	sensor_setAngleTo0(TLE_LEFT);
 }
 
-uint16_t sensor_readRegister(TLE5012B_REG_t reg, TLE5012B_ACT_t side){
-	SPI_waitForClearance();
-	uint16_t rxBuffer[2];
-	uint16_t txBuffer = 0;
-
-	prepareTXBuffer(reg, TLE_READ, &txBuffer);
-
-	CS_activateSide(side);
-
-	SPI_communicate_sync(&txBuffer, 1, &rxBuffer[0], 2);
-
-	CS_resetAll();
-
-	return rxBuffer[0];
-}
-
-void sensor_writeRegister(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT_t side){
-	SPI_waitForClearance();
-	uint16_t txBuffer[2];
-	txBuffer[0] = 0;
-	txBuffer[1] = value;
-
-	prepareTXBuffer(reg, TLE_WRITE, &txBuffer[0]);
-
-	CS_activateSide(side);
-
-	SPI_communicate_sync(&txBuffer[0], 2, 0, 1);
-
-	CS_resetAll();
-
-	return;
-}
-
-void sensor_writeRegister_async(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT_t side){
-	SPI_waitForClearance();
-	uint16_t txBuffer[2];
-	txBuffer[0] = 0;
-	txBuffer[1] = value;
-
-	prepareTXBuffer(reg, TLE_WRITE, &txBuffer[0]);
-
-	CS_activateSide(side);
-
-	SPI_communicate_async(&txBuffer[0], 2, 0, 1, CS_resetAll);
-}
-
 float sensor_getAngle(TLE5012B_ACT_t side){
 	int16_t val = sensor_readRegister(AVAL, side);
-	val &= 0b0111111111111111;
-	if(val & 0b0100000000000000){
-		val = 0b1100000000000000+(val&0b0011111111111111);
-	}
-	float ret = (360.0*val)/32768.0;
-	return ret;
+	return calculateAngleValue(val);
+}
+
+void sensor_getAngle_async(TLE5012B_ACT_t side, float* angle){
+	asyncGetAngle = angle;
+	readRegister_async_callback = sensor_getAngle_async_callback;
+	sensor_readRegister_async(AVAL, side, sensor_getAngle_async_callback);
 }
 
 int16_t sensor_getRevolutions(TLE5012B_ACT_t side){
@@ -126,6 +101,77 @@ void sensor_setAngleTo0(TLE5012B_ACT_t side){
  * Private functions
  */
 
+uint16_t sensor_readRegister(TLE5012B_REG_t reg, TLE5012B_ACT_t side){
+	SPI_waitForClearance();
+	uint16_t rxBuffer[2];
+	uint16_t txBuffer = 0;
+
+	prepareTXBuffer(reg, TLE_READ, &txBuffer);
+
+	CS_activateSide(side);
+
+	SPI_communicate_sync(&txBuffer, 1, &rxBuffer[0], 2);
+
+	CS_resetAll();
+
+	return rxBuffer[0];
+}
+
+void sensor_readRegister_async(TLE5012B_REG_t reg, TLE5012B_ACT_t side, void (*callback)(uint16_t)){
+	SPI_waitForClearance();
+	readRegister_async_RXBuffer[0] = 0;
+	readRegister_async_RXBuffer[1] = 0;
+	uint16_t txBuffer = 0;
+
+	readRegister_async_callback = callback;
+
+	prepareTXBuffer(reg, TLE_READ, &txBuffer);
+
+	CS_activateSide(side);
+
+	SPI_communicate_async(&txBuffer, 1, &readRegister_async_RXBuffer[0], 2, readRegister_async_done);
+
+	return;
+}
+
+void readRegister_async_done(void){
+	CS_resetAll();
+	if(readRegister_async_callback != 0){
+		readRegister_async_callback(readRegister_async_RXBuffer[0]);
+		readRegister_async_callback = 0;
+	}
+}
+
+void sensor_writeRegister(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT_t side){
+	SPI_waitForClearance();
+	uint16_t txBuffer[2];
+	txBuffer[0] = 0;
+	txBuffer[1] = value;
+
+	prepareTXBuffer(reg, TLE_WRITE, &txBuffer[0]);
+
+	CS_activateSide(side);
+
+	SPI_communicate_sync(&txBuffer[0], 2, 0, 1);
+
+	CS_resetAll();
+
+	return;
+}
+
+void sensor_writeRegister_async(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT_t side){
+	SPI_waitForClearance();
+	uint16_t txBuffer[2];
+	txBuffer[0] = 0;
+	txBuffer[1] = value;
+
+	prepareTXBuffer(reg, TLE_WRITE, &txBuffer[0]);
+
+	CS_activateSide(side);
+
+	SPI_communicate_async(&txBuffer[0], 2, 0, 1, CS_resetAll);
+}
+
 void prepareTXBuffer(TLE5012B_REG_t reg, TLE5012B_RW_t readOrWrite, uint16_t* txBuffer){
 	txBuffer[0] |= readOrWrite << TLE5012B_RW_POS;
 
@@ -137,6 +183,20 @@ void prepareTXBuffer(TLE5012B_REG_t reg, TLE5012B_RW_t readOrWrite, uint16_t* tx
 
 	txBuffer[0] |= reg << TLE5012B_ADDR_POS;
 	txBuffer[0] |= 0x01 << TLE5012B_ND_POS;
+}
+
+float calculateAngleValue(uint16_t registerValue){
+	int16_t val = registerValue;
+	val &= 0b0111111111111111;
+	if(val & 0b0100000000000000){
+		val = 0b1100000000000000+(val&0b0011111111111111);
+	}
+	float ret = (360.0*val)/32768.0;
+	return ret;
+}
+
+void sensor_getAngle_async_callback(uint16_t registerValue){
+	*asyncGetAngle = calculateAngleValue(registerValue);
 }
 
 /*

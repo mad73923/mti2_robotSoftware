@@ -128,7 +128,6 @@ void SPI_setParamsToVariables(uint16_t* pdataTX, uint32_t ndataTX, uint16_t* pda
 }
 
 void SPI_communicate_async_TxDoneCallback(void){
-	// needed??
 	SPI_waitForClearance();
 	LL_SPI_Disable(TLE_SPI_INST);
 	if(nbDataToReceive>0){
