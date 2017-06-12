@@ -133,11 +133,7 @@ void SPI_communicate_async_TxDoneCallback(void){
 	if(nbDataToReceive>0){
 		SPI_enableRX();
 	}else{
-		SPI_resetRxDoneCallback();
-		SPI_resetTxDoneCallback();
-		if(SPI_communicate_async_done_callback != 0){
-			SPI_communicate_async_done_callback();
-		}
+		SPI_communicate_async_RxDoneCallback();
 	}
 }
 

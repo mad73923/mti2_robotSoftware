@@ -11,10 +11,13 @@
  * Variables
  */
 
+volatile uint8_t ressourceBusy;
+
 void (*readRegister_async_callback)(uint16_t);
 uint16_t readRegister_async_RXBuffer[2];
 
 float* asyncGetAngle;
+int16_t* asyncGetRevos;
 
 /*
  * Private function prototypes
@@ -25,6 +28,9 @@ void CS_activateLeft(void);
 void CS_resetAll(void);
 void CS_activateSide(TLE5012B_ACT_t side);
 
+void mutex_lock(void);
+void mutex_unlock(void);
+
 uint16_t sensor_readRegister(TLE5012B_REG_t reg, TLE5012B_ACT_t side);
 void sensor_readRegister_async(TLE5012B_REG_t reg, TLE5012B_ACT_t side, void (*callback)(uint16_t));
 void readRegister_async_done(void);
@@ -33,10 +39,12 @@ void sensor_writeRegister(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT_t sid
 void sensor_writeRegister_async(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT_t side);
 
 void sensor_getAngle_async_callback(uint16_t registerValue);
+void sensor_getRevos_async_callback(uint16_t registerValue);
 
 void prepareTXBuffer(TLE5012B_REG_t reg, TLE5012B_RW_t readOrWrite, uint16_t* txBuffer);
 
 float calculateAngleValue(uint16_t registerValue);
+int16_t calculateRevolutionValue(uint16_t registerValue);
 
 /*
  * Public functions
@@ -45,6 +53,8 @@ float calculateAngleValue(uint16_t registerValue);
 void sensor_init(void){
 	SPI_init();
 	CS_init();
+
+	mutex_unlock();
 
 	sensor_hardwareReset(TLE_LEFT);
 	sensor_disableCRCMonitoring(TLE_LEFT);
@@ -57,18 +67,20 @@ float sensor_getAngle(TLE5012B_ACT_t side){
 }
 
 void sensor_getAngle_async(TLE5012B_ACT_t side, float* angle){
+	mutex_lock();
 	asyncGetAngle = angle;
-	readRegister_async_callback = sensor_getAngle_async_callback;
 	sensor_readRegister_async(AVAL, side, sensor_getAngle_async_callback);
 }
 
 int16_t sensor_getRevolutions(TLE5012B_ACT_t side){
 	int16_t val = sensor_readRegister(AREV, side);
-	val &= 0b111111111;
-	if(val & 0b100000000){
-		val = 0b1111111100000000+(val&0b11111111);
-	}
-	return val;
+	return calculateRevolutionValue(val);
+}
+
+void sensor_getRevolutions_async(TLE5012B_ACT_t side, int16_t* revos){
+	mutex_lock();
+	asyncGetRevos = revos;
+	sensor_readRegister_async(AREV, side, sensor_getRevos_async_callback);
 }
 
 void sensor_hardwareReset(TLE5012B_ACT_t side){
@@ -100,6 +112,15 @@ void sensor_setAngleTo0(TLE5012B_ACT_t side){
 /*
  * Private functions
  */
+
+void mutex_lock(void){
+	while(ressourceBusy);
+	ressourceBusy = 1;
+}
+
+void mutex_unlock(void){
+	ressourceBusy = 0;
+}
 
 uint16_t sensor_readRegister(TLE5012B_REG_t reg, TLE5012B_ACT_t side){
 	SPI_waitForClearance();
@@ -137,8 +158,12 @@ void sensor_readRegister_async(TLE5012B_REG_t reg, TLE5012B_ACT_t side, void (*c
 void readRegister_async_done(void){
 	CS_resetAll();
 	if(readRegister_async_callback != 0){
-		readRegister_async_callback(readRegister_async_RXBuffer[0]);
+		void (*callbackTemp)(uint16_t) = readRegister_async_callback;
 		readRegister_async_callback = 0;
+		mutex_unlock();
+		callbackTemp(readRegister_async_RXBuffer[0]);
+	}else{
+		mutex_unlock();
 	}
 }
 
@@ -197,6 +222,19 @@ float calculateAngleValue(uint16_t registerValue){
 
 void sensor_getAngle_async_callback(uint16_t registerValue){
 	*asyncGetAngle = calculateAngleValue(registerValue);
+}
+
+int16_t calculateRevolutionValue(uint16_t registerValue){
+	int16_t val = registerValue;
+	val &= 0b111111111;
+	if(val & 0b100000000){
+		val = 0b1111111100000000+(val&0b11111111);
+	}
+	return val;
+}
+
+void sensor_getRevos_async_callback(uint16_t registerValue){
+	*asyncGetRevos = calculateRevolutionValue(registerValue);
 }
 
 /*
