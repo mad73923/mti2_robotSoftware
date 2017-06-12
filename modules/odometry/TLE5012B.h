@@ -80,6 +80,8 @@ int16_t sensor_getRevolutions(TLE5012B_ACT_t side);
 void sensor_getAngle_async(TLE5012B_ACT_t side, float* angle);
 void sensor_getRevolutions_async(TLE5012B_ACT_t side, int16_t* revos);
 
+void sensor_updateAll_async(float* angleLeft, int16_t* revolLeft);
+
 void sensor_hardwareReset(TLE5012B_ACT_t side);
 void sensor_setAngleTo0(TLE5012B_ACT_t side);
 void sensor_disableCRCMonitoring(TLE5012B_ACT_t side);

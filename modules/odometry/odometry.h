@@ -11,18 +11,24 @@
 #include "TLE5012B.h"
 
 typedef struct{
-	float angleWheel_l;
-}odo_angles;
+	float angle;
+	int16_t revolutions;
+}wheel;
 
 typedef struct{
-	int16_t revsWheel_l;
-}odo_revs;
+	int32_t posX;
+	int32_t posY;
+}point;
+
+typedef struct{
+	wheel left;
+	wheel right;
+	point position;
+	float theta;
+}odo_status;
 
 void odometry_init(void);
-odo_angles odometry_getAngles(void);
-odo_revs odometry_getRevolutions(void);
-
-void odometry_updateAngles(void);
-void odometry_updateRevolutions(void);
+void odometry_updateStatus_async(void);
+odo_status odometry_getStatus(void);
 
 #endif /* ODOMETRY_ODOMETRY_H_ */
