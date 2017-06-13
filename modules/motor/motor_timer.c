@@ -89,7 +89,7 @@ void motor_timer_init(void){
   * @param  cMotor (Left/Right Motor), iCC(CaptureCompare (0-100))
   * @retval None
   */
-uint16_t set_cc(char cMotor, int16_t iCC){
+int32_t set_cc(char cMotor, int32_t iCC){
 
 	if(cMotor == MOTORLEFT){
 		LL_TIM_OC_SetCompareCH2(TIM3, iCC);
@@ -107,7 +107,7 @@ uint16_t set_cc(char cMotor, int16_t iCC){
   * @param  cMotor (Left/Right Motor) cDir(Forward, Backward) iCC(CaptureCompare (0-100))
   * @retval None
   */
-uint16_t set_dir(char cMotor,char cDir){
+int32_t set_dir(char cMotor,char cDir){
 
 	if(cMotor == MOTORLEFT){
 		if(cDir==FORWARD){
@@ -128,4 +128,5 @@ uint16_t set_dir(char cMotor,char cDir){
 			return BACKWARD;
 		}
 	}
+	return -1; //Failure
 }

@@ -30,7 +30,7 @@ void configure_gpio(void){
   * @param  which motor cMotor (MOTOR_LEFT/MOTOR_RIGHT), iSpeed(Speed from -1999-400 (Backwards) & +400-1999 (Forward) @9V Motor Power Supply)
   * @retval The CC-Value of the PWM, if anything went wrong -1
   */
-uint16_t motor_setSpeed(char cMotor, int16_t iSpeed){
+int32_t motor_setSpeed(char cMotor, int32_t iSpeed){
 
 	//Check direction
 	if(iSpeed<0){
@@ -40,11 +40,9 @@ uint16_t motor_setSpeed(char cMotor, int16_t iSpeed){
 		set_dir(cMotor,FORWARD);
 	}
 
-	//Check Speed-Limits
-	if(iSpeed<SPEED_MIN){
+	//Check Speed-Limit
+	if(iSpeed>LL_TIM_GetAutoReload(TIM4)){
 		return set_cc(cMotor, 0);
-	}else if(iSpeed>LL_TIM_GetAutoReload(TIM4)){
-		return set_cc(cMotor, LL_TIM_GetAutoReload(TIM4));
 	}else{
 		return set_cc(cMotor, iSpeed);
 	}
