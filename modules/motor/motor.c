@@ -42,7 +42,7 @@ int32_t motor_setSpeed(char cMotor, int32_t iSpeed){
 
 	//Check Speed-Limit
 	if(iSpeed>LL_TIM_GetAutoReload(TIM4)){
-		return set_cc(cMotor, 0);
+		return set_cc(cMotor, LL_TIM_GetAutoReload(TIM4));
 	}else{
 		return set_cc(cMotor, iSpeed);
 	}
