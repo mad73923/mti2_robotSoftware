@@ -338,7 +338,6 @@ void USART_RecieveCallback(void){
 		strncat(RxBuffer,&recieved,1);
 		if(recieved=='\n'){
 			Lines++;
-			//debug_printf("%s",RxBuffer);
 		}
 	}
 }

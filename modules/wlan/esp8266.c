@@ -8,58 +8,23 @@
 #include "esp8266.h"
 #include "html.h"
 
+enum TCP_state {waiting_for_data,
+	wait_for_UID_startindicator,
+	wait_for_UID_SEND_OK,
+	wait_for_Pos_startindicator,
+	wait_for_Pos_SEND_OK,
+	wait_for_Dist_startindicator,
+	wait_for_Dist_SEND_OK,};
+enum TCP_state actTCPstate = waiting_for_data;
+
+char TCPbuffer[1450];
+char TCPbuffer2[5];
+char TCPbuffer3[20];
+
+
+
 void ESP8266init(){
 	UARTinit();
-}
-
-uint8_t ESP8266createAP(const char* SSID,const char* PW,const char* IP){
-	char buffer[80];
-	uint8_t returnval = 0;
-	//Set Mode to Soft AP
-	UARTStartTransfers("AT+RST\r\n");
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForReady(500000);
-	if(returnval!=0){
-		return returnval;
-	}
-	UARTStartTransfers("ATE0\r\n");
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForOkOrError(500000);
-	if(returnval!=0){
-		return returnval;
-	}
-	UARTStartTransfers("AT+CWMODE_CUR=2\r\n");
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForOkOrError(500000);
-	if(returnval!=0){
-		return returnval;
-	}
-	debug_printf("Setting AP-Mode successful!\n\r");
-	strcpy(buffer,"AT+CWSAP_CUR=\"");
-	strcat(buffer,SSID);
-	strcat(buffer,"\",\"");
-	strcat(buffer,PW);
-	strcat(buffer,"\",5,3\r\n");
-	UARTStartTransfers(buffer);
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForOkOrError(500000);
-	if(returnval!=0){
-			return returnval;
-	}
-	debug_printf("Setting SSID and Password successful!\n\r");
-	strcpy(buffer,"AT+CIPAP_CUR=\"");
-	strcat(buffer,IP);
-	strcat(buffer,"\",\"");
-	strcat(buffer,IP);
-	strcat(buffer,"\",\"255.255.255.0\"\r\n");
-	UARTStartTransfers(buffer);
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForOkOrError(500000);
-	if(returnval!=0){
-			return returnval;
-	}
-	debug_printf("Setting IP-Address successful!\n\r");
-	return returnval;
 }
 
 uint8_t ESP8266connectToAp(const char* SSID,const char* PW,const char* IP){
@@ -110,70 +75,6 @@ uint8_t ESP8266connectToAp(const char* SSID,const char* PW,const char* IP){
 	return returnval;
 }
 
-uint8_t ESP8266startServer(const char* Port){
-	char buffer[80];
-	uint8_t returnval = 0;
-	UARTStartTransfers("AT+CIPMUX=1\r\n");
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForOkOrError(100000);
-	if(returnval!=0){
-		return returnval;
-	}
-	debug_printf("Setting multiple connections enable successful!\n\r");
-	strcpy(buffer,"AT+CIPSERVER=1,");
-	strcat(buffer,Port);
-	strcat(buffer,"\r\n");
-	UARTStartTransfers(buffer);
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForOkOrError(100000);
-	if(returnval!=0){
-			return returnval;
-	}
-	debug_printf("Activating Server successful!\n\r");
-	return returnval;
-}
-
-uint8_t ESP8266handleConnectionsWithHtml(void){
-	uint8_t returnval = -1;
-	uint8_t client = UARTcheckForNewConnection();
-	if(client<=3){
-		debug_printf("Incoming Connection from client %d\n\r", client);
-		//Antwort senden!
-		char buffer[80];
-		char buffer2[10];
-		strcpy(buffer,"AT+CIPSEND=");
-		buffer2[0] = client + '0'; //Client to ASCII
-		buffer2[1] = '\0';
-		strcat(buffer,buffer2);
-		strcat(buffer,",");
-		sprintf(buffer2,"%d",strlen(webpage));
-		strcat(buffer,buffer2);
-		strcat(buffer,"\r\n");
-		UARTStartTransfers(buffer);
-		UARTwaitEndOfTransfer();
-		returnval = UARTwaitForStartIndicator(100000);
-		if(returnval!=0){
-			return returnval;
-		}
-		debug_printf("Sending...\n\r");
-		UARTStartTransfers(webpage);
-		UARTwaitEndOfTransfer();
-		returnval = UARTwaitForSendOK(10000);
-			if(returnval!=0){
-				return returnval;
-			}
-		debug_printf("Closing connection...\n\r");
-		strcpy(buffer,"AT+CIPCLOSE=");
-		buffer2[0] = client + '0';
-		buffer2[1] = '\0';
-		strcat(buffer,buffer2);
-		strcat(buffer,"\r\n");
-		UARTStartTransfers(buffer);
-		UARTwaitEndOfTransfer();
-	}
-	return returnval;
-}
-
 uint8_t ESP8266connectToTCPserver(const char* IP, const char* Port){
 	char buffer[80];
 	uint8_t returnval = 0;
@@ -211,100 +112,6 @@ const char* ESP8266getIncomingTCPdata(void){
 	return returnval;
 }
 
-uint8_t ESP8266sendUID(const char* UID){
-	uint8_t returnval = 0;
-	char buffer[80];
-	char buffer2[5];
-	strcpy(buffer,"AT+CIPSEND=");
-	sprintf(buffer2,"%d",strlen(UID)+4);
-	strcat(buffer,buffer2);
-	strcat(buffer,"\r\n");
-	UARTStartTransfers(buffer);
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForStartIndicator(100000);
-	if(returnval!=0){
-		return returnval;
-	}
-	debug_printf("Sending UID...\n\r");
-	strcpy(buffer,"UID=");
-	strcat(buffer,UID);
-	UARTStartTransfers(buffer);
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForSendOK(10000);
-		if(returnval!=0){
-			return returnval;
-		}
-	return returnval;
-}
-
-uint8_t ESP8266sendDistances(uint16_t Dist[],uint16_t cntDistanceVal){
-	uint8_t returnval = 0;
-	char bufferMessage[1450];
-	char buffer[80];
-	char buffer2[10];
-	strcpy(bufferMessage,"ActDistances=[");
-	for(int i =0;i<cntDistanceVal;i++){
-		if(i<(cntDistanceVal-1)){
-			sprintf(buffer2,"%d,",Dist[i]);
-		}
-		else{
-			sprintf(buffer2,"%d]",Dist[i]);
-		}
-		strcat(bufferMessage,buffer2);
-	}
-	strcpy(buffer,"AT+CIPSEND=");
-	sprintf(buffer2,"%d",strlen(bufferMessage));
-	strcat(buffer,buffer2);
-	strcat(buffer,"\r\n");
-	UARTStartTransfers(buffer);
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForStartIndicator(100000);
-	if(returnval!=0){
-		return returnval;
-	}
-	debug_printf("Sending ActDist...\n\r");
-	//debug_printf(bufferMessage);
-	UARTStartTransfers(bufferMessage);
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForSendOK(10000000);
-		if(returnval!=0){
-			return returnval;
-		}
-	return returnval;
-}
-
-uint8_t ESP8266sendPos(int32_t xPos,int32_t yPos,float angle){
-	uint8_t returnval = 0;
-	char bufferMessage[80];
-	char buffer[80];
-	char buffer2[5];
-	strcpy(bufferMessage,"ActPos=");
-	sprintf(buffer2,"%ld,",xPos);
-	strcat(bufferMessage,buffer2);
-	sprintf(buffer2,"%ld,",yPos);
-	strcat(bufferMessage,buffer2);
-	sprintf(buffer2,"%.1f",angle);
-	strcat(bufferMessage,buffer2);
-	strcpy(buffer,"AT+CIPSEND=");
-	sprintf(buffer2,"%d",strlen(bufferMessage));
-	strcat(buffer,buffer2);
-	strcat(buffer,"\r\n");
-	UARTStartTransfers(buffer);
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForStartIndicator(100000);
-	if(returnval!=0){
-		return returnval;
-	}
-	debug_printf("Sending ActPos...\n\r");
-	UARTStartTransfers(bufferMessage);
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForSendOK(10000);
-		if(returnval!=0){
-			return returnval;
-		}
-	return returnval;
-}
-
 uint8_t ESP8266sendTCPmessage(const char* Message){
 	uint8_t returnval = 0;
 	char buffer[80];
@@ -328,18 +135,6 @@ uint8_t ESP8266sendTCPmessage(const char* Message){
 	return returnval;
 }
 
-enum TCP_state {waiting_for_data,
-	wait_for_UID_startindicator,
-	wait_for_UID_SEND_OK,
-	wait_for_Pos_startindicator,
-	wait_for_Pos_SEND_OK,
-	wait_for_Dist_startindicator,
-	wait_for_Dist_SEND_OK,};
-enum TCP_state actTCPstate = waiting_for_data;
-
-char TCPbuffer[1450];
-char TCPbuffer2[5];
-char TCPbuffer3[20];
 
 uint8_t ESP8266handleTCP(void){
 
@@ -365,7 +160,7 @@ uint8_t ESP8266handleTCP(void){
 		if(strcmp(ptrMessage,"GetPos?")==0){
 			debug_printf("Robot was asked for Pos\n\r");
 			strcpy(TCPbuffer,"ActPos=");
-			sprintf(TCPbuffer2,"%ld,",123);
+			sprintf(TCPbuffer2,"[%ld,",123);
 			strcat(TCPbuffer,TCPbuffer2);
 			sprintf(TCPbuffer2,"%ld,",345);
 			strcat(TCPbuffer,TCPbuffer2);
