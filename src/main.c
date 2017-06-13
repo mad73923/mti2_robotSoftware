@@ -19,20 +19,20 @@ int16_t DriveTurnVal = 0;
 
 int main(void){
 	//Abstandsmesswerte generieren
-	for(uint16_t i =0; i<cntDistanceVal; i++){
-		distances[i]= i*20+10;//rand()%800;
-	}
+//	for(uint16_t i =0; i<cntDistanceVal; i++){
+//		distances[i]= i*20+10;//rand()%800;
+//	}
 	system_init();
 	debug_init();
 	WLANinit();
 	WLANconnectToAp("RobotStation","StationPassword","10.42.0.10");
-	WLANconnectToTCPserver("10.42.0.143","2323");
+//	WLANconnectToTCPserver("10.42.0.143","2323");
 	//uint32_t cnt = 0;
 	while(1){
-		int state = WLANhandleTCP();
-		if(state){
-			debug_printf("%d\r\n",state);
-		}
+//		int state = WLANhandleTCP();
+//		if(state){
+//			debug_printf("%d\r\n",state);
+//		}
 //			//ToDo: TCP- und WLAN-Verbindungsstatus abfragen und Verbindungen wiederherstellen/Robot stoppen
 //			//ToDo: Drive commands in Asynchrone TCP-Datenabfrage implementieren
 	}

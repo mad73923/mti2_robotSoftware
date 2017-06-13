@@ -19,6 +19,7 @@
 
 void UARTinit(void);
 void UARTStartTransfers(const char* Command);
+void UARTStartTransfersCB(const char* Command, void(*callback)(char*,uint16_t));
 void UARTwaitEndOfTransfer(void);
 uint8_t UARTwaitForOkOrError(uint32_t cyclesTimeout);
 uint8_t UARTcheckForNewConnection(void);
@@ -29,6 +30,8 @@ const char* UARTCheckForIPD(void);
 uint8_t UARTcheckForStartIndicator(void);
 uint8_t UARTcheckForSendOK(void);
 uint8_t UARTcheckEndOfTransfer(void);
+void UARTsetNewLineCallback(void(*callback)(char*,uint16_t));
+void UARTclearBuffer(void);
 
 //CLK
 #define WLAN_UART_GPIO_CLK_ENABLE()	LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOC)

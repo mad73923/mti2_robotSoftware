@@ -7,6 +7,9 @@
 
 #include "uart.h"
 
+void dma_hardwareInit(void);
+void UART_hardwareInit(void);
+
 void DMA_TransmitComplete_Callback(void);
 void USART_TransferError_Callback(void);
 void USART_RecieveCallback(void);
@@ -27,9 +30,16 @@ volatile uint8_t Lines = 0; //wir ind ISR um 1 erhöht bei jedem \n = 0A
 
 char IPDBuffer[100] = "";
 
+void(*newLineCallback)(char*,uint16_t);
+
 
 void UARTinit(){
-	/*
+	UART_hardwareInit();
+	dma_hardwareInit();
+}
+
+void UART_hardwareInit(void){
+	/*UARTinit
 	 * PIN CONFIG
 	 */
 
@@ -74,7 +84,9 @@ void UARTinit(){
 	{
 
 	}
+}
 
+void dma_hardwareInit(void){
 	/*
 	 * DMA CONFIG
 	 */
@@ -115,6 +127,21 @@ void UARTinit(){
 	NVIC_SetPriority(WLAN_UART_IRQn, WLAN_UART_RX_PRIO);
 	LL_USART_EnableIT_RXNE(WLAN_UART_INST);
 	NVIC_EnableIRQ(WLAN_UART_IRQn);
+}
+
+void UARTStartTransfersCB(const char* Command, void(*callback)(char*,uint16_t))
+{
+	newLineCallback = callback;
+	TransmissionComplete = 0;
+	strcpy(TxBuffer, Command);
+	TxLength = strlen(TxBuffer);
+	LL_DMA_SetDataLength(WLAN_UART_TX_DMA_INST, WLAN_UART_TX_DMA_CH, TxLength);
+
+	/* Enable DMA TX Interrupt */
+	LL_USART_EnableDMAReq_TX(WLAN_UART_INST);
+
+	/* Enable DMA Channel Tx */
+	LL_DMA_EnableChannel(WLAN_UART_TX_DMA_INST, WLAN_UART_TX_DMA_CH);
 }
 
 void UARTStartTransfers(const char* Command)
@@ -318,6 +345,12 @@ void DMA_TransmitComplete_Callback(void)
   TransmissionComplete = 1;
 }
 
+void UARTclearBuffer(){
+	memset(RxBuffer,0,sizeof(RxBuffer));
+	Lines = 0;
+	Characters = 0;
+}
+
 void USART_TransferError_Callback(void)
 {
   /* Disable DMA1 Tx Channel */
@@ -333,11 +366,19 @@ void USART3_IRQHandler(void){
 
 void USART_RecieveCallback(void){
 	if(Characters<=999){
+		//debug_printf("Character recieved!\n\r");
 		char recieved = LL_USART_ReceiveData8(WLAN_UART_INST);
 		Characters++;
 		strncat(RxBuffer,&recieved,1);
 		if(recieved=='\n'){
 			Lines++;
+			//void(*tmpCallback)(char*,uint16_t) = newLineCallback;
+			if(newLineCallback != 0){
+				newLineCallback(RxBuffer,Characters);
+			}
+			else{
+				debug_printf("Callback = 0!\n\r");
+			}
 		}
 	}
 }
@@ -363,4 +404,8 @@ const char* UARTCheckForIPD(void){
 			}
 		}
 	return returnval;
+}
+
+void UARTsetNewLineCallback(void(*callback)(char*,uint16_t)){
+	newLineCallback = callback;
 }
