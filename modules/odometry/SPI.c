@@ -210,7 +210,6 @@ void TLE_SPI_Rx_Callback(void){
  */
 
 void TLE_SPI_IRQ_HANDLER(void){
-	debug_led_on();
 	/* Check TXE flag value in ISR register */
 	if(LL_SPI_IsActiveFlag_TXE(TLE_SPI_INST) && LL_SPI_IsEnabledIT_TXE(TLE_SPI_INST)){
 		/* Call function Master Transmission Callback */
@@ -221,5 +220,4 @@ void TLE_SPI_IRQ_HANDLER(void){
 		/* Call function Slave Reception Callback */
 		TLE_SPI_Rx_Callback();
 	}
-	debug_led_off();
 }
