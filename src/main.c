@@ -15,6 +15,7 @@
 /*!!!SERVO TEST!!!*/
 int main(void){
 	system_init();
+	debug_init();
 
 	//Init
 	env_timer_init();
@@ -22,6 +23,7 @@ int main(void){
 	int i = 0;
 	servo_set_angle(i);
 
+	uint32_t cnt = 0;
 	while(1){
 
 		LL_mDelay(200);
