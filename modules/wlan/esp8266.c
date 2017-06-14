@@ -28,6 +28,12 @@ uint8_t mutex;
 
 void(*esp8266readyCallback)(uint8_t);
 
+void (*ESP8266_readyReceived)(char*,uint16_t);
+void (*ESP8266_OK_Received)(char*, uint16_t);
+
+void ESP8266ExpectReadyCallback(char* buffer, uint16_t length);
+void ESP8266ExpectOKCallback(char* buffer, uint16_t length);
+
 void ESP8266connectToApCallback1(char* Buffer,uint16_t Length);
 void ESP8266connectToApCallback2(char* Buffer,uint16_t Length);
 void ESP8266connectToApCallback3(char* Buffer,uint16_t Length);
@@ -58,8 +64,9 @@ uint8_t ESP8266connectToAp(const char* SSID,const char* PW,const char* IP, void(
 	strcpy(IP_loc,IP);
 	uint8_t returnval = 0;
 	//debug_printf("Start to connect to AP\n\r");
+	ESP8266_readyReceived = ESP8266connectToApCallback1;
 	UARTclearBuffer();
-	UARTStartTransfersCB("AT+RST\r\n",ESP8266connectToApCallback1);
+	UARTStartTransfersCB("AT+RST\r\n",ESP8266ExpectReadyCallback);
 	return returnval;
 }
 
@@ -316,27 +323,13 @@ uint8_t ESP8266handleTCP(void){
 	return actTCPstate;
 }
 
-void ESP8266connectToApCallback1(char* RxBuffer,uint16_t Length){
-	//debug_printf("Callback\n\r");
-	if(strstr(RxBuffer,"ready")){
-//		debug_printf("ready recieved!\n\r");
-		UARTclearBuffer();
-		UARTStartTransfersCB("ATE1\r\n",ESP8266connectToApCallback2);
-	}
-	else{
-		UARTsetNewLineCallback(ESP8266connectToApCallback1);
-		UARTclearBuffer();
-	}
-}
-
-void ESP8266connectToApCallback2(char* RxBuffer,uint16_t Length){
-	if(strstr(RxBuffer,"OK")){
-		UARTclearBuffer();
-		UARTStartTransfersCB("AT+CWMODE_CUR=1\r\n",ESP8266connectToApCallback3);
-	}
-	else if(strstr(RxBuffer,"ERROR")){
-		debug_printf("ERROR recieved\n\r");
-		UARTclearBuffer();
+void ESP8266ExpectReadyCallback(char* buffer, uint16_t length){
+	if(strstr(buffer,"ready")){
+	//		debug_printf("ready recieved!\n\r");
+			UARTclearBuffer();
+			ESP8266_readyReceived(buffer, length);
+		}
+	else if(strstr(buffer,"ERROR")){
 		mutex_unlock();
 		if(esp8266readyCallback!=0){
 			esp8266readyCallback(1);
@@ -344,81 +337,62 @@ void ESP8266connectToApCallback2(char* RxBuffer,uint16_t Length){
 		}
 	}
 	else{
-		UARTsetNewLineCallback(ESP8266connectToApCallback2);
+		UARTsetNewLineCallback(ESP8266ExpectReadyCallback);
+		UARTclearBuffer();
 	}
 }
 
-void ESP8266connectToApCallback3(char* RxBuffer,uint16_t Length){
-	if(strstr(RxBuffer,"OK")){
+void ESP8266ExpectOKCallback(char* buffer, uint16_t length){
+	if(strstr(buffer,"OK")){
+	//		debug_printf("ready recieved!\n\r");
+			UARTclearBuffer();
+			ESP8266_OK_Received(buffer, length);
+		}
+	else if(strstr(buffer,"ERROR")){
+		mutex_unlock();
+		if(esp8266readyCallback!=0){
+			esp8266readyCallback(1);
+			esp8266readyCallback = 0;
+		}
+	}
+	else{
+		UARTsetNewLineCallback(ESP8266ExpectOKCallback);
 		UARTclearBuffer();
-		//debug_printf("Setting STA-Mode successful!\n\r");
+	}
+}
+
+void ESP8266connectToApCallback1(char* RxBuffer,uint16_t Length){
+		ESP8266_OK_Received = ESP8266connectToApCallback2;
+		UARTStartTransfersCB("ATE1\r\n",ESP8266ExpectOKCallback);
+}
+
+void ESP8266connectToApCallback2(char* RxBuffer,uint16_t Length){
+		ESP8266_OK_Received = ESP8266connectToApCallback3;
+		UARTStartTransfersCB("AT+CWMODE_CUR=1\r\n",ESP8266ExpectOKCallback);
+}
+
+void ESP8266connectToApCallback3(char* RxBuffer,uint16_t Length){
+		ESP8266_OK_Received = ESP8266connectToApCallback4;
 		strcpy(Buffer,"AT+CWJAP_CUR=\"");
 		strcat(Buffer,SSID_loc);
 		strcat(Buffer,"\",\"");
 		strcat(Buffer,PW_loc);
 		strcat(Buffer,"\"\r\n");
-		UARTStartTransfersCB(Buffer,ESP8266connectToApCallback4);
-		UARTcheckEndOfTransfer();
-	}
-	else if(strstr(RxBuffer,"ERROR")){
-		//debug_printf("ERROR recieved\n\r");
-		UARTclearBuffer();
-		mutex_unlock();
-		if(esp8266readyCallback!=0){
-			esp8266readyCallback(1);
-			esp8266readyCallback = 0;
-		}
-	}
-	else{
-			UARTsetNewLineCallback(ESP8266connectToApCallback3);
-		}
+		UARTStartTransfersCB(Buffer,ESP8266ExpectOKCallback);
 }
 
 void ESP8266connectToApCallback4(char* RxBuffer,uint16_t Length){
-	if(strstr(RxBuffer,"OK")){
-		UARTclearBuffer();
-		//debug_printf("Connecting to AP successful!\n\r");
+		ESP8266_OK_Received = ESP8266connectToApCallback5;
 		strcpy(Buffer,"AT+CIPSTA_CUR=\"");
 		strcat(Buffer,IP_loc);
 		strcat(Buffer,"\"\r\n");
-		UARTStartTransfersCB(Buffer,ESP8266connectToApCallback5);
-		UARTcheckEndOfTransfer();
-	}
-	else if(strstr(RxBuffer,"ERROR")){
-		//debug_printf("ERROR recieved\n\r");
-		UARTclearBuffer();
-		mutex_unlock();
-		if(esp8266readyCallback!=0){
-			esp8266readyCallback(1);
-			esp8266readyCallback = 0;
-		}
-	}
-	else{
-				UARTsetNewLineCallback(ESP8266connectToApCallback4);
-			}
+		UARTStartTransfersCB(Buffer,ESP8266ExpectOKCallback);
 }
 
 void ESP8266connectToApCallback5(char* RxBuffer,uint16_t Length){
-	if(strstr(RxBuffer,"OK")){
-		//debug_printf("Setting IP-Address successful!\n\r");
-		UARTclearBuffer();
 		mutex_unlock();
 		if(esp8266readyCallback!=0){
 			esp8266readyCallback(0);
 			esp8266readyCallback = 0;
 		}
-	}
-	else if(strstr(RxBuffer,"ERROR")){
-		//debug_printf("ERROR recieved\n\r");
-		UARTclearBuffer();
-		mutex_unlock();
-		if(esp8266readyCallback!=0){
-			esp8266readyCallback(1);
-			esp8266readyCallback = 0;
-		}
-	}
-	else{
-					UARTsetNewLineCallback(ESP8266connectToApCallback5);
-				}
-
 }

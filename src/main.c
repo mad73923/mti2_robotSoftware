@@ -26,6 +26,10 @@ int main(void){
 	debug_init();
 	WLANinit();
 	WLANconnectToAp("RobotStation","StationPassword","10.42.0.10");
+	while(WLANgetConnectionStatus()!=1){
+
+	}
+	WLANconnectToTCPserver("10.42.0.143","2323");
 //	WLANconnectToTCPserver("10.42.0.143","2323");
 	//uint32_t cnt = 0;
 	while(1){
