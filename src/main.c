@@ -23,7 +23,7 @@ int main(void){
 //		distances[i]= i*20+10;//rand()%800;
 //	}
 	system_init();
-	//debug_init();
+	debug_init();
 	WLANinit();
 	WLANconnectToAp("RobotStation","StationPassword","10.42.0.10");
 //	WLANconnectToTCPserver("10.42.0.143","2323");

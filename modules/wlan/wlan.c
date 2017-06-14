@@ -41,6 +41,7 @@ void WlanConnectedToApCallback(uint8_t Error){
 	}
 	else{
 		ConnectionStatus = 1;
+		debug_printf("Connection ready! \n\r");
 	}
 }
 
