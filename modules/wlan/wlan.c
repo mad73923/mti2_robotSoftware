@@ -36,6 +36,7 @@ uint8_t WLANhandleTCP(void){
 
 void WlanConnectedToApCallback(uint8_t Error){
 	if(Error){
+		debug_printf("Connection ready! \n\r");
 		ConnectionStatus = 0;
 	}
 	else{

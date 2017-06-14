@@ -33,7 +33,7 @@ uint8_t UARTcheckEndOfTransfer(void);
 void UARTsetNewLineCallback(void(*callback)(char*,uint16_t));
 void UARTclearBuffer(void);
 
-//CLK
+//CLKESP8266connectToApCallback1
 #define WLAN_UART_GPIO_CLK_ENABLE()	LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOC)
 //TX GPIO
 #define WLAN_UART_GPIO_TX_PIN		LL_GPIO_PIN_10

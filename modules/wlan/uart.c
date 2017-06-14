@@ -24,7 +24,7 @@ char TxBuffer[2000];
 volatile uint8_t TransmissionComplete;
 volatile uint8_t TransmissionError;
 
-char RxBuffer[1000] = "";
+char RxBuffer[10000] = "";
 volatile uint16_t Characters = 0;
 volatile uint8_t Lines = 0; //wir ind ISR um 1 erhöht bei jedem \n = 0A
 
@@ -343,6 +343,7 @@ void DMA_TransmitComplete_Callback(void)
 {
   //DMA Tx transfer completed
   TransmissionComplete = 1;
+  LL_DMA_DisableChannel(WLAN_UART_TX_DMA_INST, WLAN_UART_TX_DMA_CH);
 }
 
 void UARTclearBuffer(){
@@ -362,23 +363,26 @@ void USART3_IRQHandler(void){
 	if(LL_USART_IsActiveFlag_RXNE(WLAN_UART_INST)){
 		USART_RecieveCallback();
 	}
+	else{
+		//debug_printf("other USART3 interrupt\n\r");
+	}
 }
 
 void USART_RecieveCallback(void){
-	if(Characters<=999){
+	if(Characters<=9999){
 		//debug_printf("Character recieved!\n\r");
 		char recieved = LL_USART_ReceiveData8(WLAN_UART_INST);
+		//debug_printf("%s\n\r",recieved);
 		Characters++;
 		strncat(RxBuffer,&recieved,1);
 		if(recieved=='\n'){
 			Lines++;
-			//void(*tmpCallback)(char*,uint16_t) = newLineCallback;
-			if(newLineCallback != 0){
-				newLineCallback(RxBuffer,Characters);
+			void(*newlinetemp)(char*, uint16_t)=newLineCallback;
+			if(newLineCallback!=0){
+				newLineCallback=0;
+				newlinetemp(RxBuffer,Characters);
 			}
-			else{
-				debug_printf("Callback = 0!\n\r");
-			}
+
 		}
 	}
 }
