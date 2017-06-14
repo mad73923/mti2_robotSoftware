@@ -19,6 +19,7 @@ volatile uint8_t transmissionComplete;
 
 void Configure_DMA(void);
 void Configure_USART(void);
+void Configure_LED(void);
 
 /*
  * Public functions
@@ -27,6 +28,7 @@ void Configure_USART(void);
 void debug_hardware_init(void){
 	Configure_DMA();
 	Configure_USART();
+	Configure_LED();
 
 	transmissionComplete = 1;
 }
@@ -162,6 +164,16 @@ void Configure_USART(void){
   while(!(LL_USART_IsActiveFlag_TEACK(DEBUG_UART_INST)))
   {
   }
+}
+
+void Configure_LED(void){
+	/* Enable the peripheral clock of GPIO Port */
+	DEBUG_LED_GPIO_CLK_INIT();
+
+	/* Configure Pin as : Output, push pull */
+	LL_GPIO_SetPinMode(DEBUG_LED_GPIO_PORT, DEBUG_LED_GPIO_PIN, LL_GPIO_MODE_OUTPUT);
+	LL_GPIO_SetPinSpeed(DEBUG_LED_GPIO_PORT, DEBUG_LED_GPIO_PIN, LL_GPIO_SPEED_FREQ_VERY_HIGH);
+	LL_GPIO_SetPinOutputType(DEBUG_LED_GPIO_PORT, DEBUG_LED_GPIO_PIN, LL_GPIO_OUTPUT_PUSHPULL);
 }
 
 /*
