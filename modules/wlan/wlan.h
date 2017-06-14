@@ -13,10 +13,11 @@
 
 void WLANinit();
 uint8_t WLANconnectToAp(const char* SSID,const char* PW,const char* IP);
-uint8_t WLANconnectToTCPserver(const char* IP, const char* Port);
+void WLANconnectToTCPserver(const char* IP, const char* Port);
 uint8_t WLANsendTCPmessage(const char* Message);
 uint8_t WLANhandleTCP(void);
-uint8_t WLANgetConnectionStatus(void);
+uint8_t WLANgetWLANConnectionStatus(void);
+uint8_t WLANgetTCPConnectionStatus(void);
 
 
 #endif /* WLAN_WLAN_H_ */

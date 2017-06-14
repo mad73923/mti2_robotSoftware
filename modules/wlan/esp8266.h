@@ -14,7 +14,7 @@
 
 void ESP8266init();
 uint8_t ESP8266connectToAp(const char* SSID,const char* PW,const char* IP, void(*ESP8266readyCallback)(uint8_t));
-uint8_t ESP8266connectToTCPserver(const char* IP, const char* Port);
+void ESP8266connectToTCPserver(const char* IP, const char* Port, void(*ESP8266readyCallback)(uint8_t));
 const char* ESP8266getIncomingTCPdata(void);
 uint8_t ESP8266sendTCPmessage(const char* Message);
 uint8_t ESP8266handleTCP(void);

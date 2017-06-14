@@ -24,6 +24,8 @@ char Buffer3[20];
 char SSID_loc[50];
 char PW_loc[50];
 char IP_loc[20];
+char ServerIP_loc[20];
+char Port_loc[5];
 uint8_t mutex;
 
 void(*esp8266readyCallback)(uint8_t);
@@ -39,6 +41,9 @@ void ESP8266connectToApCallback2(char* Buffer,uint16_t Length);
 void ESP8266connectToApCallback3(char* Buffer,uint16_t Length);
 void ESP8266connectToApCallback4(char* Buffer,uint16_t Length);
 void ESP8266connectToApCallback5(char* Buffer,uint16_t Length);
+
+void ESP8266connectToTCPserverCallback1(char* Buffer, uint16_t Length);
+void ESP8266connectToTCPserverCallback2(char* RxBuffer,uint16_t Length);
 
 void mutex_lock(void);
 void mutex_unlock(void);
@@ -62,43 +67,21 @@ uint8_t ESP8266connectToAp(const char* SSID,const char* PW,const char* IP, void(
 	strcpy(SSID_loc,SSID);
 	strcpy(PW_loc,PW);
 	strcpy(IP_loc,IP);
-	uint8_t returnval = 0;
 	//debug_printf("Start to connect to AP\n\r");
 	ESP8266_readyReceived = ESP8266connectToApCallback1;
 	UARTclearBuffer();
 	UARTStartTransfersCB("AT+RST\r\n",ESP8266ExpectReadyCallback);
-	return returnval;
+	return 0;
 }
 
-uint8_t ESP8266connectToTCPserver(const char* IP, const char* Port){
-	char buffer[80];
-	uint8_t returnval = 0;
-	UARTStartTransfers("AT+CIPMUX=0\r\n");
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForOkOrError(100000);
-	if(returnval!=0){
-		return returnval;
-	}
-	UARTStartTransfers("AT+CIPCLOSE\r\n");
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForOkOrError(100000);
-	if(returnval==0){
-		debug_printf("TCP-Connection closed!\r\n");
-	}
-	debug_printf("Setting multiple connections disable successful!\n\r");
-	strcpy(buffer,"AT+CIPSTART=\"TCP\",\""); //192.168.101.110", 1000");
-	strcat(buffer,IP);
-	strcat(buffer,"\",");
-	strcat(buffer,Port);
-	strcat(buffer,"\r\n");
-	UARTStartTransfers(buffer);
-	UARTwaitEndOfTransfer();
-	returnval = UARTwaitForOkOrError(100000);
-	if(returnval!=0){
-			return returnval;
-	}
-	debug_printf("Connection to Server successful!\n\r");
-	return returnval;
+void ESP8266connectToTCPserver(const char* IP, const char* Port, void(*ESP8266readyCallback)(uint8_t)){
+	mutex_lock();
+	esp8266readyCallback = ESP8266readyCallback;	//do that when everything is done
+	strcpy(ServerIP_loc,IP);
+	strcpy(Port_loc,Port);
+	ESP8266_OK_Received = ESP8266connectToTCPserverCallback1;
+	UARTclearBuffer();
+	UARTStartTransfersCB("AT+CIPMUX=0\r\n",ESP8266ExpectOKCallback);
 }
 
 const char* ESP8266getIncomingTCPdata(void){
@@ -362,37 +345,55 @@ void ESP8266ExpectOKCallback(char* buffer, uint16_t length){
 }
 
 void ESP8266connectToApCallback1(char* RxBuffer,uint16_t Length){
-		ESP8266_OK_Received = ESP8266connectToApCallback2;
-		UARTStartTransfersCB("ATE1\r\n",ESP8266ExpectOKCallback);
+	ESP8266_OK_Received = ESP8266connectToApCallback2;
+	UARTStartTransfersCB("ATE1\r\n",ESP8266ExpectOKCallback);
 }
 
 void ESP8266connectToApCallback2(char* RxBuffer,uint16_t Length){
-		ESP8266_OK_Received = ESP8266connectToApCallback3;
-		UARTStartTransfersCB("AT+CWMODE_CUR=1\r\n",ESP8266ExpectOKCallback);
+	ESP8266_OK_Received = ESP8266connectToApCallback3;
+	UARTStartTransfersCB("AT+CWMODE_CUR=1\r\n",ESP8266ExpectOKCallback);
 }
 
 void ESP8266connectToApCallback3(char* RxBuffer,uint16_t Length){
-		ESP8266_OK_Received = ESP8266connectToApCallback4;
-		strcpy(Buffer,"AT+CWJAP_CUR=\"");
-		strcat(Buffer,SSID_loc);
-		strcat(Buffer,"\",\"");
-		strcat(Buffer,PW_loc);
-		strcat(Buffer,"\"\r\n");
-		UARTStartTransfersCB(Buffer,ESP8266ExpectOKCallback);
+	ESP8266_OK_Received = ESP8266connectToApCallback4;
+	strcpy(Buffer,"AT+CWJAP_CUR=\"");
+	strcat(Buffer,SSID_loc);
+	strcat(Buffer,"\",\"");
+	strcat(Buffer,PW_loc);
+	strcat(Buffer,"\"\r\n");
+	UARTStartTransfersCB(Buffer,ESP8266ExpectOKCallback);
 }
 
 void ESP8266connectToApCallback4(char* RxBuffer,uint16_t Length){
-		ESP8266_OK_Received = ESP8266connectToApCallback5;
-		strcpy(Buffer,"AT+CIPSTA_CUR=\"");
-		strcat(Buffer,IP_loc);
-		strcat(Buffer,"\"\r\n");
-		UARTStartTransfersCB(Buffer,ESP8266ExpectOKCallback);
+	ESP8266_OK_Received = ESP8266connectToApCallback5;
+	strcpy(Buffer,"AT+CIPSTA_CUR=\"");
+	strcat(Buffer,IP_loc);
+	strcat(Buffer,"\"\r\n");
+	UARTStartTransfersCB(Buffer,ESP8266ExpectOKCallback);
 }
 
 void ESP8266connectToApCallback5(char* RxBuffer,uint16_t Length){
-		mutex_unlock();
-		if(esp8266readyCallback!=0){
-			esp8266readyCallback(0);
-			esp8266readyCallback = 0;
-		}
+	mutex_unlock();
+	if(esp8266readyCallback!=0){
+		esp8266readyCallback(0);
+		esp8266readyCallback = 0;
+	}
+}
+
+void ESP8266connectToTCPserverCallback1(char* RxBuffer,uint16_t Length){
+	ESP8266_OK_Received = ESP8266connectToTCPserverCallback2;
+	strcpy(Buffer,"AT+CIPSTART=\"TCP\",\""); //192.168.101.110", 1000");
+	strcat(Buffer,ServerIP_loc);
+	strcat(Buffer,"\",");
+	strcat(Buffer,Port_loc);
+	strcat(Buffer,"\r\n");
+	UARTStartTransfersCB(Buffer,ESP8266ExpectOKCallback);
+}
+
+void ESP8266connectToTCPserverCallback2(char* RxBuffer,uint16_t Length){
+	mutex_unlock();
+	if(esp8266readyCallback!=0){
+		esp8266readyCallback(0);
+		esp8266readyCallback = 0;
+	}
 }
