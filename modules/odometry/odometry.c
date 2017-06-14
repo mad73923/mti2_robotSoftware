@@ -12,8 +12,7 @@
  */
 
 odo_status currentStatus;
-
-uint8_t updateEndless;
+odo_status oldStatus;
 
 /*
  * Private functions prototypes
@@ -47,5 +46,18 @@ void updateAllCallback1(void){
 }
 
 void updateAllCallback2(void){
-	sensor_getSpeed_async(TLE_LEFT, &currentStatus.left.speed, 0);
+	float deltaThetaLeft;
+	if(oldStatus.left.angle < 0 && currentStatus.left.angle > 0){
+		deltaThetaLeft = -oldStatus.left.angle - currentStatus.left.angle;
+	}else if(oldStatus.left.angle > 0 && currentStatus.left.angle < 0){
+		deltaThetaLeft = oldStatus.left.angle + currentStatus.left.angle;
+	}else{
+		deltaThetaLeft = oldStatus.left.angle - currentStatus.left.angle;
+	}
+	float deltaSLeft = deltaThetaLeft * (ODO_wheelDiameter / 2.0);
+	float alphaLeft = deltaSLeft/(ODO_halfAxialLength * 2.0);
+	float alphaLeft_rad = alphaLeft * M_PI/180.0;
+	currentStatus.position.posX += (cos(alphaLeft_rad)*ODO_halfAxialLength)-ODO_halfAxialLength;
+	currentStatus.position.posY += sin(alphaLeft_rad)*ODO_halfAxialLength;
+	oldStatus = currentStatus;
 }

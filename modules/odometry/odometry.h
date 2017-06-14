@@ -9,11 +9,11 @@
 #define ODOMETRY_ODOMETRY_H_
 
 #include "TLE5012B.h"
+#include <math.h>
 
 typedef struct{
 	float angle;
 	int16_t revolutions;
-	float speed;
 }wheel;
 
 typedef struct{
@@ -27,6 +27,10 @@ typedef struct{
 	point position;
 	float theta;
 }odo_status;
+
+// all measures in mm
+#define ODO_wheelDiameter 65.0
+#define ODO_halfAxialLength 69.0
 
 void odometry_init(void);
 void odometry_updateStatus_async(void);
