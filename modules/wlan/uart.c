@@ -373,8 +373,10 @@ void USART_RecieveCallback(void){
 		//debug_printf("Character recieved!\n\r");
 		char recieved = LL_USART_ReceiveData8(WLAN_UART_INST);
 		//debug_printf("%s\n\r",recieved);
+		RxBuffer[Characters]=recieved;
 		Characters++;
-		strncat(RxBuffer,&recieved,1);
+
+		//strncat(RxBuffer,&recieved,1);
 		if(recieved=='\n'){
 			Lines++;
 			void(*newlinetemp)(char*, uint16_t)=newLineCallback;
