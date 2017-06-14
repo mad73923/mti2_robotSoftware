@@ -27,10 +27,10 @@ void debug_init(void){
 
 
 void debug_printf(const char* format, ...){
+	uart_waitTransmissionComplete();
+
 	va_list args;
 	va_start(args, format);
-
-	uart_waitTransmissionComplete();
 
 	vsprintf(txBuffer, format, args);
 	va_end(args);
@@ -41,4 +41,16 @@ void debug_printf(const char* format, ...){
 	}
 
 	uart_send(txBuffer, length);
+}
+
+void debug_led_on(void){
+	LL_GPIO_WriteOutputPort(DEBUG_LED_GPIO_PORT, LL_GPIO_ReadInputPort(DEBUG_LED_GPIO_PORT)&DEBUG_LED_GPIO_PIN);
+}
+
+void debug_led_off(void){
+	LL_GPIO_WriteOutputPort(DEBUG_LED_GPIO_PORT, LL_GPIO_ReadInputPort(DEBUG_LED_GPIO_PORT)&(~DEBUG_LED_GPIO_PIN));
+}
+
+void debug_led_toggle(void){
+	LL_GPIO_TogglePin(DEBUG_LED_GPIO_PORT, DEBUG_LED_GPIO_PIN);
 }
