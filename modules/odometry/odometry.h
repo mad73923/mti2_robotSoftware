@@ -13,6 +13,7 @@
 typedef struct{
 	float angle;
 	int16_t revolutions;
+	float speed;
 }wheel;
 
 typedef struct{

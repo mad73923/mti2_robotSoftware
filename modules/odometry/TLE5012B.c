@@ -20,6 +20,7 @@ void (*module_done_callback)(void);
 
 float* asyncGetAngle;
 int16_t* asyncGetRevos;
+float* asyncGetSpeed;
 
 /*
  * Private function prototypes
@@ -42,6 +43,7 @@ void sensor_writeRegister_async(TLE5012B_REG_t reg, uint16_t value, TLE5012B_ACT
 
 void sensor_getAngle_async_callback(uint16_t registerValue);
 void sensor_getRevos_async_callback(uint16_t registerValue);
+void sensor_getSpeed_async_callback(uint16_t registerValue);
 
 void prepareTXBuffer(TLE5012B_REG_t reg, TLE5012B_RW_t readOrWrite, uint16_t* txBuffer);
 
@@ -85,6 +87,13 @@ void sensor_getRevolutions_async(TLE5012B_ACT_t side, int16_t* revos, void (*cal
 	asyncGetRevos = revos;
 	module_done_callback = callback;
 	sensor_readRegister_async(AREV, side, sensor_getRevos_async_callback);
+}
+
+void sensor_getSpeed_async(TLE5012B_ACT_t side, float* speed, void (*callback)){
+	mutex_lock();
+	asyncGetSpeed = speed;
+	module_done_callback = callback;
+	sensor_readRegister_async(ASPD, side, sensor_getSpeed_async_callback);
 }
 
 void sensor_hardwareReset(TLE5012B_ACT_t side){
@@ -167,8 +176,9 @@ void readRegister_async_done(void){
 	}
 	mutex_unlock();
 	if(module_done_callback != 0){
-		module_done_callback();
+		void (*temp_module_done)(void) = module_done_callback;
 		module_done_callback = 0;
+		temp_module_done();
 	}
 }
 
@@ -240,6 +250,20 @@ int16_t calculateRevolutionValue(uint16_t registerValue){
 
 void sensor_getRevos_async_callback(uint16_t registerValue){
 	*asyncGetRevos = calculateRevolutionValue(registerValue);
+}
+
+float calculateSpeedValue(uint16_t registerValue){
+	int16_t val = registerValue;
+	val &= 0b0111111111111111;
+	if(val & 0b0100000000000000){
+		val = 0b1100000000000000+(val&0b0011111111111111);
+	}
+	// 360/2^15 = 0.010986328
+	return (0.010986328 * val)/2.0;
+}
+
+void sensor_getSpeed_async_callback(uint16_t registerValue){
+	*asyncGetSpeed = calculateSpeedValue(registerValue);
 }
 
 /*

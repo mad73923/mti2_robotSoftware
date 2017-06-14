@@ -13,11 +13,14 @@
 
 odo_status currentStatus;
 
+uint8_t updateEndless;
+
 /*
  * Private functions prototypes
  */
 
 void updateAllCallback1(void);
+void updateAllCallback2(void);
 
 /*
  * Public functions
@@ -40,5 +43,9 @@ odo_status odometry_getStatus(void){
  */
 
 void updateAllCallback1(void){
-	sensor_getRevolutions_async(TLE_LEFT, &currentStatus.left.revolutions, 0);
+	sensor_getRevolutions_async(TLE_LEFT, &currentStatus.left.revolutions, updateAllCallback2);
+}
+
+void updateAllCallback2(void){
+		sensor_getSpeed_async(TLE_LEFT, &currentStatus.left.speed, 0);
 }

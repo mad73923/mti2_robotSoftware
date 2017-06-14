@@ -79,6 +79,7 @@ int16_t sensor_getRevolutions(TLE5012B_ACT_t side);
 
 void sensor_getAngle_async(TLE5012B_ACT_t side, float* angle, void (*callback));
 void sensor_getRevolutions_async(TLE5012B_ACT_t side, int16_t* revos, void (*callback));
+void sensor_getSpeed_async(TLE5012B_ACT_t side, float* speed, void (*callback));
 
 void sensor_hardwareReset(TLE5012B_ACT_t side);
 void sensor_setAngleTo0(TLE5012B_ACT_t side);
