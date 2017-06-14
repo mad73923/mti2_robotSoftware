@@ -47,5 +47,5 @@ void updateAllCallback1(void){
 }
 
 void updateAllCallback2(void){
-		sensor_getSpeed_async(TLE_LEFT, &currentStatus.left.speed, 0);
+	sensor_getSpeed_async(TLE_LEFT, &currentStatus.left.speed, 0);
 }

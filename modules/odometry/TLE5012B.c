@@ -163,7 +163,7 @@ void sensor_readRegister_async(TLE5012B_REG_t reg, TLE5012B_ACT_t side, void (*c
 
 	CS_activateSide(side);
 
-	SPI_communicate_async(&txBuffer, 1, &readRegister_async_RXBuffer[0], 2, readRegister_async_done);
+	SPI_communicate_async(&txBuffer, 1, &readRegister_async_RXBuffer[0], 1, readRegister_async_done);
 
 	return;
 }

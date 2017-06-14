@@ -19,6 +19,6 @@ int main(void){
 		odometry_updateStatus_async();
 		stat = odometry_getStatus();
 		debug_printf("angle: %f revolution: %i speed: %f\n", stat.left.angle, stat.left.revolutions, stat.left.speed);
-		LL_mDelay(200);
+		LL_mDelay(100);
 	}
 }

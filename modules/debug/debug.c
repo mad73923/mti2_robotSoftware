@@ -44,11 +44,11 @@ void debug_printf(const char* format, ...){
 }
 
 void debug_led_on(void){
-	LL_GPIO_WriteOutputPort(DEBUG_LED_GPIO_PORT, LL_GPIO_ReadInputPort(DEBUG_LED_GPIO_PORT)&DEBUG_LED_GPIO_PIN);
+	DEBUG_LED_GPIO_PORT->BSRR = DEBUG_LED_GPIO_PIN;
 }
 
 void debug_led_off(void){
-	LL_GPIO_WriteOutputPort(DEBUG_LED_GPIO_PORT, LL_GPIO_ReadInputPort(DEBUG_LED_GPIO_PORT)&(~DEBUG_LED_GPIO_PIN));
+	DEBUG_LED_GPIO_PORT->BSRR = (DEBUG_LED_GPIO_PIN<<16);
 }
 
 void debug_led_toggle(void){

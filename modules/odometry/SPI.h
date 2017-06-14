@@ -11,6 +11,7 @@
 #include "stm32l4xx_ll_bus.h"
 #include "stm32l4xx_ll_gpio.h"
 #include "stm32l4xx_ll_spi.h"
+#include "../debug/debug.h"
 
 void SPI_init(void);
 
