@@ -10,9 +10,16 @@
 
 /*Private Defines*/
 #define NR_VALUES 36
+#define ENV_SENSING_TIMER_CLK_ENABLE	LL_APB1_GRP1_PERIPH_TIM5
+#define ENV_SENSING_TIMER_PRIO 			3
+#define ENV_SENSING_TIMER 				TIM5
+#define ENV_SENSING_TIMER_IRQ 			TIM5_IRQn
+#define ENV_SENSING_TIMER_PSC_FREQ		10000
+#define ENV_SENSING_TIMER_AR_FREQ		1
 
 #include "servo_timer.h"
 #include "adc.h"
+#include "../debug/debug.h"
 
 /*Global Variables*/
 uint16_t distances_data [NR_VALUES];
