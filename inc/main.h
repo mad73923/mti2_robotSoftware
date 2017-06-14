@@ -9,6 +9,8 @@
 #define MAIN_H_
 
 #include "../modules/system/system.h"
+//#include "../modules/motor/motor.h"
+#include "../modules/env_sensor/env_sensor.h"
 
 
 
