@@ -135,8 +135,11 @@ void ADC1_2_IRQHandler(void)
 	/*Clear ADC EOC Flag*/
 	LL_ADC_ClearFlag_EOC(ADC1);
 
-	//ADC on Pin PA0 is first converted, then PA1. The very first converted value corresponds to PA0!!!
-	linearization = (exp(b)* pow((LL_ADC_REG_ReadConversionData12(ADC1)/1241.21),a))*10;
+	/* ADC on Pin PA0 is first converted, then PA1. The very first converted value corresponds to PA0 */
+	/* With this formula, the internal ADC-value is converted into mm-distance */
+	linearization = (10*exp(b)* pow((LL_ADC_REG_ReadConversionData12(ADC1)/1241.21),a));
+
+
 	aADCxConvertedData[frontFlag] = (uint16_t)linearization;
 	frontFlag = !frontFlag;
 }
