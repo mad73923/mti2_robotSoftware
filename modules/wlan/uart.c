@@ -31,6 +31,7 @@ volatile uint8_t Lines = 0; //wir ind ISR um 1 erhöht bei jedem \n = 0A
 char IPDBuffer[100] = "";
 
 void(*newLineCallback)(char*,uint16_t);
+void(*startIndicatorCallback)(char*,uint16_t);
 
 
 void UARTinit(){
@@ -386,6 +387,13 @@ void USART_RecieveCallback(void){
 			}
 
 		}
+		else if(recieved=='>'){
+			void(*startIndicatorCallbacktemp)(char*, uint16_t)=startIndicatorCallback;
+			if(startIndicatorCallback!=0){
+				startIndicatorCallback=0;
+				startIndicatorCallbacktemp(RxBuffer,Characters);
+			}
+		}
 	}
 }
 
@@ -414,4 +422,8 @@ const char* UARTCheckForIPD(void){
 
 void UARTsetNewLineCallback(void(*callback)(char*,uint16_t)){
 	newLineCallback = callback;
+}
+
+void UARTsetStartIndicatorCallback(void(*callback)(char*,uint16_t)){
+	startIndicatorCallback = callback;
 }

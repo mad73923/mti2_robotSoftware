@@ -18,6 +18,9 @@ int16_t DriveTurnVal = 0;
 
 
 int main(void){
+	for(int i = 0;i<36;i++){
+		distances[i]=i*15;
+	}
 	system_init();
 	debug_init();
 	WLANinit();
@@ -29,6 +32,7 @@ int main(void){
 	while(WLANgetTCPConnectionStatus()!=1){
 
 	}
+	WLANstartTCPlistener();
 	while(1){
 
 	}

@@ -31,6 +31,7 @@ uint8_t UARTcheckForStartIndicator(void);
 uint8_t UARTcheckForSendOK(void);
 uint8_t UARTcheckEndOfTransfer(void);
 void UARTsetNewLineCallback(void(*callback)(char*,uint16_t));
+void UARTsetStartIndicatorCallback(void(*callback)(char*,uint16_t));
 void UARTclearBuffer(void);
 
 //CLKESP8266connectToApCallback1

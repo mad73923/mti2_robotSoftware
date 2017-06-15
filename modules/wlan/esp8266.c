@@ -32,9 +32,15 @@ void(*esp8266readyCallback)(uint8_t);
 
 void (*ESP8266_readyReceived)(char*,uint16_t);
 void (*ESP8266_OK_Received)(char*, uint16_t);
+void (*ESP8266_IPD_Received)(char*, uint16_t);
+void (*ESP8266_StartIndicator_Received)(char*, uint16_t);
+void (*ESP8266_SendOk_Received)(char*, uint16_t);
 
 void ESP8266ExpectReadyCallback(char* buffer, uint16_t length);
 void ESP8266ExpectOKCallback(char* buffer, uint16_t length);
+void ESP8266ExpectIPDCallback(char* buffer, uint16_t length);
+void ESP8266ExpectStartIndicatorCallback(char* buffer, uint16_t length);
+void ESP8266ExpectSendOkCallback(char* buffer, uint16_t length);
 
 void ESP8266connectToApCallback1(char* Buffer,uint16_t Length);
 void ESP8266connectToApCallback2(char* Buffer,uint16_t Length);
@@ -44,6 +50,11 @@ void ESP8266connectToApCallback5(char* Buffer,uint16_t Length);
 
 void ESP8266connectToTCPserverCallback1(char* Buffer, uint16_t Length);
 void ESP8266connectToTCPserverCallback2(char* RxBuffer,uint16_t Length);
+
+void ESP8266_IPD_Callback1(char* RxBuffer,uint16_t Length);
+void ESP8255_IPD_SendUIDCallback1(char* RxBuffer,uint16_t Length);
+void ESP8255_IPD_SendUIDCallback2(char* RxBuffer,uint16_t Length);
+void ESP8255_IPD_SendUIDCallback3(char* RxBuffer,uint16_t Length);
 
 void mutex_lock(void);
 void mutex_unlock(void);
@@ -61,7 +72,7 @@ void ESP8266init(){
 	UARTinit();
 }
 
-uint8_t ESP8266connectToAp(const char* SSID,const char* PW,const char* IP, void(*ESP8266readyCallback)(uint8_t)){
+void ESP8266connectToAp(const char* SSID,const char* PW,const char* IP, void(*ESP8266readyCallback)(uint8_t)){
 	mutex_lock();
 	esp8266readyCallback = ESP8266readyCallback;
 	strcpy(SSID_loc,SSID);
@@ -71,7 +82,6 @@ uint8_t ESP8266connectToAp(const char* SSID,const char* PW,const char* IP, void(
 	ESP8266_readyReceived = ESP8266connectToApCallback1;
 	UARTclearBuffer();
 	UARTStartTransfersCB("AT+RST\r\n",ESP8266ExpectReadyCallback);
-	return 0;
 }
 
 void ESP8266connectToTCPserver(const char* IP, const char* Port, void(*ESP8266readyCallback)(uint8_t)){
@@ -82,6 +92,14 @@ void ESP8266connectToTCPserver(const char* IP, const char* Port, void(*ESP8266re
 	ESP8266_OK_Received = ESP8266connectToTCPserverCallback1;
 	UARTclearBuffer();
 	UARTStartTransfersCB("AT+CIPMUX=0\r\n",ESP8266ExpectOKCallback);
+}
+
+void ESP8266startTCPlistener(void(*ESP8266readyCallback)(uint8_t)){
+	mutex_lock();
+	UARTclearBuffer();
+	esp8266readyCallback = ESP8266readyCallback;	//do that when everything is done
+	ESP8266_IPD_Received = ESP8266_IPD_Callback1;	//do after IPD was recieved
+	UARTsetNewLineCallback(ESP8266ExpectIPDCallback);	//Do for every new-line
 }
 
 const char* ESP8266getIncomingTCPdata(void){
@@ -344,13 +362,66 @@ void ESP8266ExpectOKCallback(char* buffer, uint16_t length){
 	}
 }
 
+void ESP8266ExpectSendOkCallback(char* buffer, uint16_t length){
+	if(strstr(buffer,"SEND OK")){
+		UARTclearBuffer();
+		mutex_unlock();
+		if(esp8266readyCallback!=0){
+			esp8266readyCallback(0);
+			esp8266readyCallback = 0;
+		}
+	}
+	else if(strstr(buffer,"FAILED")){
+		mutex_unlock();
+		if(esp8266readyCallback!=0){
+			esp8266readyCallback(1);
+			esp8266readyCallback = 0;
+		}
+	}
+	else if(strstr(buffer,"ERROR")){
+		mutex_unlock();
+		if(esp8266readyCallback!=0){
+			esp8266readyCallback(1);
+			esp8266readyCallback = 0;
+		}
+	}
+	else{
+		UARTsetNewLineCallback(ESP8266ExpectSendOkCallback);
+		UARTclearBuffer();
+	}
+}
+
+void ESP8266ExpectIPDCallback(char* buffer, uint16_t length){
+	if(strstr(buffer,"+IPD,")){
+		if(strstr(buffer,"GetUID?")){
+			ESP8266_IPD_Received = ESP8255_IPD_SendUIDCallback1;
+		}
+		UARTclearBuffer();
+		ESP8266_IPD_Received(buffer, length);
+		}
+	else if(strstr(buffer,"ERROR")){
+		mutex_unlock();
+		UARTclearBuffer();
+		if(esp8266readyCallback!=0){
+			esp8266readyCallback(1);
+			esp8266readyCallback = 0;
+		}
+	}
+	else{
+		UARTsetNewLineCallback(ESP8266ExpectIPDCallback); //Wait again
+		UARTclearBuffer();
+	}
+}
+
 void ESP8266connectToApCallback1(char* RxBuffer,uint16_t Length){
 	ESP8266_OK_Received = ESP8266connectToApCallback2;
+	UARTclearBuffer();
 	UARTStartTransfersCB("ATE1\r\n",ESP8266ExpectOKCallback);
 }
 
 void ESP8266connectToApCallback2(char* RxBuffer,uint16_t Length){
 	ESP8266_OK_Received = ESP8266connectToApCallback3;
+	UARTclearBuffer();
 	UARTStartTransfersCB("AT+CWMODE_CUR=1\r\n",ESP8266ExpectOKCallback);
 }
 
@@ -361,6 +432,7 @@ void ESP8266connectToApCallback3(char* RxBuffer,uint16_t Length){
 	strcat(Buffer,"\",\"");
 	strcat(Buffer,PW_loc);
 	strcat(Buffer,"\"\r\n");
+	UARTclearBuffer();
 	UARTStartTransfersCB(Buffer,ESP8266ExpectOKCallback);
 }
 
@@ -369,11 +441,13 @@ void ESP8266connectToApCallback4(char* RxBuffer,uint16_t Length){
 	strcpy(Buffer,"AT+CIPSTA_CUR=\"");
 	strcat(Buffer,IP_loc);
 	strcat(Buffer,"\"\r\n");
+	UARTclearBuffer();
 	UARTStartTransfersCB(Buffer,ESP8266ExpectOKCallback);
 }
 
 void ESP8266connectToApCallback5(char* RxBuffer,uint16_t Length){
 	mutex_unlock();
+	UARTclearBuffer();
 	if(esp8266readyCallback!=0){
 		esp8266readyCallback(0);
 		esp8266readyCallback = 0;
@@ -387,13 +461,37 @@ void ESP8266connectToTCPserverCallback1(char* RxBuffer,uint16_t Length){
 	strcat(Buffer,"\",");
 	strcat(Buffer,Port_loc);
 	strcat(Buffer,"\r\n");
+	UARTclearBuffer();
 	UARTStartTransfersCB(Buffer,ESP8266ExpectOKCallback);
 }
 
 void ESP8266connectToTCPserverCallback2(char* RxBuffer,uint16_t Length){
 	mutex_unlock();
+	UARTclearBuffer();
 	if(esp8266readyCallback!=0){
 		esp8266readyCallback(0);
 		esp8266readyCallback = 0;
 	}
+}
+
+void ESP8266_IPD_Callback1(char* RxBuffer,uint16_t Length){
+
+}
+
+void ESP8255_IPD_SendUIDCallback1(char* RxBuffer,uint16_t Length){
+	ESP8266_StartIndicator_Received = ESP8255_IPD_SendUIDCallback2;
+	uint32_t index = 0;
+	index += sprintf(&Buffer[index], "%s", "AT+CIPSEND=");
+	index += sprintf(&Buffer[index], "%d\r\n", strlen(uid_getUIDString())+4);
+	UARTclearBuffer();
+	UARTsetStartIndicatorCallback(ESP8255_IPD_SendUIDCallback2);
+	UARTStartTransfersCB(Buffer,0);	//because of listen to >
+}
+
+void ESP8255_IPD_SendUIDCallback2(char* RxBuffer,uint16_t Length){
+	uint32_t index = 0;
+	index += sprintf(&Buffer[index], "%s", "UID=");
+	index += sprintf(&Buffer[index], "%s", uid_getUIDString());
+	UARTclearBuffer();
+	UARTStartTransfersCB(Buffer,ESP8266ExpectSendOkCallback);
 }
