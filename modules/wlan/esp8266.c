@@ -18,7 +18,7 @@ enum TCP_state {waiting_for_data,
 enum TCP_state actTCPstate = waiting_for_data;
 
 char Buffer[1450];
-char Buffer2[5];
+char Buffer2[50];
 char Buffer3[20];
 
 char SSID_loc[50];
@@ -32,7 +32,7 @@ void(*esp8266readyCallback)(uint8_t);
 
 void (*ESP8266_readyReceived)(char*,uint16_t);
 void (*ESP8266_OK_Received)(char*, uint16_t);
-void (*ESP8266_IPD_Received)(char*, uint16_t);
+void (*ESP8266_IPD_ReceivedCallback)(char*, uint16_t);
 void (*ESP8266_StartIndicator_Received)(char*, uint16_t);
 void (*ESP8266_SendOk_Received)(char*, uint16_t);
 
@@ -54,7 +54,11 @@ void ESP8266connectToTCPserverCallback2(char* RxBuffer,uint16_t Length);
 void ESP8266_IPD_Callback1(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SendUIDCallback1(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SendUIDCallback2(char* RxBuffer,uint16_t Length);
-void ESP8255_IPD_SendUIDCallback3(char* RxBuffer,uint16_t Length);
+void ESP8255_IPD_SendPosCallback1(char* RxBuffer,uint16_t Length);
+void ESP8255_IPD_SendPosCallback2(char* RxBuffer,uint16_t Length);
+void ESP8255_IPD_SendDistancesCallback1(char* RxBuffer,uint16_t Length);
+void ESP8255_IPD_SendDistancesCallback2(char* RxBuffer,uint16_t Length);
+
 
 void mutex_lock(void);
 void mutex_unlock(void);
@@ -98,7 +102,7 @@ void ESP8266startTCPlistener(void(*ESP8266readyCallback)(uint8_t)){
 	mutex_lock();
 	UARTclearBuffer();
 	esp8266readyCallback = ESP8266readyCallback;	//do that when everything is done
-	ESP8266_IPD_Received = ESP8266_IPD_Callback1;	//do after IPD was recieved
+	ESP8266_IPD_ReceivedCallback = ESP8266_IPD_Callback1;	//do after IPD was recieved
 	UARTsetNewLineCallback(ESP8266ExpectIPDCallback);	//Do for every new-line
 }
 
@@ -132,197 +136,36 @@ uint8_t ESP8266sendTCPmessage(const char* Message){
 }
 
 
-uint8_t ESP8266handleTCP(void){
-
-	uint8_t temp = 0;
-	switch(actTCPstate){
-	case waiting_for_data:{
-		const char* ptrMessage = ESP8266getIncomingTCPdata();
-		if(ptrMessage==NULL){break;}				//if no new data recieved return
-		debug_printf("Data revieved: %s\n\r", ptrMessage );		//else send recieved message over debug-uart
-
-		if(strcmp(ptrMessage,"GetUID?")==0){
-			debug_printf("Robot was asked for UID\n\r");
-			strcpy(Buffer,"AT+CIPSEND=");
-			sprintf(Buffer2,"%d",strlen(uid_getUIDString())+4);
-			strcat(Buffer,Buffer2);
-			strcat(Buffer,"\r\n");
-			debug_printf(Buffer);
-			UARTStartTransfers(Buffer);
-			actTCPstate = wait_for_UID_startindicator;
-			break;
-		}
-
-		if(strcmp(ptrMessage,"GetPos?")==0){
-			debug_printf("Robot was asked for Pos\n\r");
-			strcpy(Buffer,"ActPos=");
-			sprintf(Buffer2,"[%ld,",123);
-			strcat(Buffer,Buffer2);
-			sprintf(Buffer2,"%ld,",345);
-			strcat(Buffer,Buffer2);
-			sprintf(Buffer2,"%.1f",67.8);
-			strcat(Buffer,Buffer2);
-			strcpy(Buffer3,"AT+CIPSEND=");
-			sprintf(Buffer2,"%d",strlen(Buffer));
-			strcat(Buffer3,Buffer2);
-			strcat(Buffer3,"\r\n");
-			UARTStartTransfers(Buffer3);
-			actTCPstate = wait_for_Pos_startindicator;
-			break;
-		}
-
-		if(strcmp(ptrMessage,"GetDistances?")==0){
-			debug_printf("Robot was asked for Distances\n\r");
-			strcpy(Buffer,"ActDistances=[");
-			uint16_t Dist[36];
-			for(int i=0;i<36;i++){
-					Dist[i] = i*20;
-			}
-			for(int i =0;i<36;i++){
-				if(i<(36-1)){
-					sprintf(Buffer2,"%d,",Dist[i]);
-				}
-				else{
-					sprintf(Buffer2,"%d]",Dist[i]);
-				}
-				strcat(Buffer,Buffer2);
-			}
-			strcpy(Buffer3,"AT+CIPSEND=");
-			sprintf(Buffer2,"%d",strlen(Buffer));
-			strcat(Buffer3,Buffer2);
-			strcat(Buffer3,"\r\n");
-			UARTStartTransfers(Buffer3);
-			actTCPstate = wait_for_Dist_startindicator;
-			break;
-		}
-		debug_printf("Recieved not known command!");
-		break;
-	}
-
-	case wait_for_UID_startindicator:{
-		if(UARTcheckEndOfTransfer()==1){
-			break;	//if not completely sent
-		}
-		temp = UARTcheckForStartIndicator();
-		if(temp==1){	//If no > and no ERROR was recieved return
-			break;
-		}
-		if(temp==2){	//If ERROR was recieved
-			debug_printf("ERROR recieved when trying to send UID!\n\r");
-			actTCPstate = waiting_for_data;
-			break;
-		}
-		//if > recieved start sending UID
-		debug_printf("Start sending UID...\n\r");
-		strcpy(Buffer,"UID=");
-		strcat(Buffer,uid_getUIDString());
-		//debug_printf(buffer);
-		UARTStartTransfers(Buffer);
-		actTCPstate = wait_for_UID_SEND_OK;
-		break;
-	}
-
-	case wait_for_UID_SEND_OK:{
-		if(UARTcheckEndOfTransfer()==1){
-			break;	//if not completely sent
-		}
-		temp = UARTcheckForSendOK();
-		if(temp==1){	//no SendOk, FAILED or ERROR was recieved
-			//debug_printf("waiting!\n\r");
-			break;
-		}
-		if(temp==2){
-			debug_printf("ERROR/Failed recieved when trying to send UID!\n\r");
-			actTCPstate = waiting_for_data;
-			break;
-		}
-		//If SEND OK was revieved
-		debug_printf("UID was sent!\n\r");
-		actTCPstate = waiting_for_data;
-		break;
-	}
-	case wait_for_Pos_startindicator:{
-		if(UARTcheckEndOfTransfer()==1){
-			break;	//if not completely sent
-		}
-		temp = UARTcheckForStartIndicator();
-		if(temp==1){	//If no > and no ERROR was recieved return
-			break;
-		}
-		if(temp==2){	//If ERROR was recieved
-			debug_printf("ERROR recieved when trying to send Pos!\n\r");
-			actTCPstate = waiting_for_data;
-			break;
-		}
-		//if > recieved start sending UID
-		debug_printf("Start sending Pos...\n\r");
-		UARTStartTransfers(Buffer);
-		actTCPstate = wait_for_Pos_SEND_OK;
-		break;
-	}
-	case wait_for_Pos_SEND_OK:{
-		if(UARTcheckEndOfTransfer()==1){
-			break;	//if not completely sent
-		}
-		temp = UARTcheckForSendOK();
-		if(temp==1){	//no SendOk, FAILED or ERROR was recieved
-			//debug_printf("waiting!\n\r");
-			break;
-		}
-		if(temp==2){
-			debug_printf("ERROR/Failed recieved when trying to send Pos!\n\r");
-			actTCPstate = waiting_for_data;
-			break;
-		}
-		//If SEND OK was revieved
-		debug_printf("Pos was sent!\n\r");
-		actTCPstate = waiting_for_data;
-		break;
-	}
-
-	case wait_for_Dist_startindicator:{
-		if(UARTcheckEndOfTransfer()==1){
-			break;	//if not completely sent
-		}
-		temp = UARTcheckForStartIndicator();
-		if(temp==1){	//If no > and no ERROR was recieved return
-			break;
-		}
-		if(temp==2){	//If ERROR was recieved
-			debug_printf("ERROR recieved when trying to send Distances!\n\r");
-			actTCPstate = waiting_for_data;
-			break;
-		}
-		//if > recieved start sending UID
-		debug_printf("Start sending Distances...\n\r");
-		debug_printf(Buffer);
-		UARTStartTransfers(Buffer);
-		actTCPstate = wait_for_Dist_SEND_OK;
-		break;
-	}
-	case wait_for_Dist_SEND_OK:{
-		if(UARTcheckEndOfTransfer()==1){
-			break;	//if not completely sent
-		}
-		temp = UARTcheckForSendOK();
-		if(temp==1){	//no SendOk, FAILED or ERROR was recieved
-			//debug_printf("waiting!\n\r");
-			break;
-		}
-		if(temp==2){
-			debug_printf("ERROR/Failed recieved when trying to send Distances!\n\r");
-			actTCPstate = waiting_for_data;
-			break;
-		}
-		//If SEND OK was revieved
-		debug_printf("Distances sent!\n\r");
-		actTCPstate = waiting_for_data;
-		break;
-	}
-
-	}
-	return actTCPstate;
-}
+//uint8_t ESP8266handleTCP(void){
+//		if(strcmp(ptrMessage,"GetDistances?")==0){
+//			debug_printf("Robot was asked for Distances\n\r");
+//			strcpy(Buffer,"ActDistances=[");
+//			uint16_t Dist[36];
+//			for(int i=0;i<36;i++){
+//					Dist[i] = i*20;
+//			}
+//			for(int i =0;i<36;i++){
+//				if(i<(36-1)){
+//					sprintf(Buffer2,"%d,",Dist[i]);
+//				}
+//				else{
+//					sprintf(Buffer2,"%d]",Dist[i]);
+//				}
+//				strcat(Buffer,Buffer2);
+//			}
+//			strcpy(Buffer3,"AT+CIPSEND=");
+//			sprintf(Buffer2,"%d",strlen(Buffer));
+//			strcat(Buffer3,Buffer2);
+//			strcat(Buffer3,"\r\n");
+//			UARTStartTransfers(Buffer3);
+//			actTCPstate = wait_for_Dist_startindicator;
+//			break;
+//		}
+//		debug_printf("Recieved not known command!");
+//		break;
+//	}
+//
+//}
 
 void ESP8266ExpectReadyCallback(char* buffer, uint16_t length){
 	if(strstr(buffer,"ready")){
@@ -366,9 +209,10 @@ void ESP8266ExpectSendOkCallback(char* buffer, uint16_t length){
 	if(strstr(buffer,"SEND OK")){
 		UARTclearBuffer();
 		mutex_unlock();
+		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
 		if(esp8266readyCallback!=0){
-			esp8266readyCallback(0);
-			esp8266readyCallback = 0;
+			esp8266readyCallbacktemp(0);
+
 		}
 	}
 	else if(strstr(buffer,"FAILED")){
@@ -393,11 +237,24 @@ void ESP8266ExpectSendOkCallback(char* buffer, uint16_t length){
 
 void ESP8266ExpectIPDCallback(char* buffer, uint16_t length){
 	if(strstr(buffer,"+IPD,")){
+		ESP8266_IPD_ReceivedCallback=0;
 		if(strstr(buffer,"GetUID?")){
-			ESP8266_IPD_Received = ESP8255_IPD_SendUIDCallback1;
+			ESP8266_IPD_ReceivedCallback = ESP8255_IPD_SendUIDCallback1;
+		}
+		else if(strstr(buffer,"GetPos?")){
+			ESP8266_IPD_ReceivedCallback = ESP8255_IPD_SendPosCallback1;
+		}
+		else if(strstr(buffer,"GetDistances?")){
+			ESP8266_IPD_ReceivedCallback = ESP8255_IPD_SendDistancesCallback1;
 		}
 		UARTclearBuffer();
-		ESP8266_IPD_Received(buffer, length);
+		if(ESP8266_IPD_ReceivedCallback!=0){
+			ESP8266_IPD_ReceivedCallback(buffer, length);
+			ESP8266_IPD_ReceivedCallback=0;
+		}
+		else{
+			debug_printf("Undefined TCP-Data");
+		}
 		}
 	else if(strstr(buffer,"ERROR")){
 		mutex_unlock();
@@ -479,7 +336,6 @@ void ESP8266_IPD_Callback1(char* RxBuffer,uint16_t Length){
 }
 
 void ESP8255_IPD_SendUIDCallback1(char* RxBuffer,uint16_t Length){
-	ESP8266_StartIndicator_Received = ESP8255_IPD_SendUIDCallback2;
 	uint32_t index = 0;
 	index += sprintf(&Buffer[index], "%s", "AT+CIPSEND=");
 	index += sprintf(&Buffer[index], "%d\r\n", strlen(uid_getUIDString())+4);
@@ -492,6 +348,50 @@ void ESP8255_IPD_SendUIDCallback2(char* RxBuffer,uint16_t Length){
 	uint32_t index = 0;
 	index += sprintf(&Buffer[index], "%s", "UID=");
 	index += sprintf(&Buffer[index], "%s", uid_getUIDString());
+	UARTclearBuffer();
+	UARTStartTransfersCB(Buffer,ESP8266ExpectSendOkCallback);
+}
+
+void ESP8255_IPD_SendPosCallback1(char* RxBuffer,uint16_t Length){
+	uint32_t index = 0;
+	index += sprintf(&Buffer[index], "%s", "ActPos=");
+	index += sprintf(&Buffer[index], "[%ld,",123);
+	index += sprintf(&Buffer[index], "%ld,",345);
+	index += sprintf(&Buffer[index], "%.1f]",67.8);
+	index = 0;
+	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
+	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
+	UARTclearBuffer();
+	UARTsetStartIndicatorCallback(ESP8255_IPD_SendPosCallback2);
+	UARTStartTransfersCB(Buffer2,0);	//because of listen to >
+}
+
+void ESP8255_IPD_SendPosCallback2(char* RxBuffer,uint16_t Length){
+	UARTclearBuffer();
+	UARTStartTransfersCB(Buffer,ESP8266ExpectSendOkCallback);
+}
+
+//Beispieldaten
+uint16_t distances[36] = {1,2,3,4,5,4,3,2,1,0,10,20,30,40,50,40,30,20,10,0,100,200,300,400,500,400,300,200,100,0,20,40,60,80,90,100};
+uint16_t numdistances = 36;
+
+void ESP8255_IPD_SendDistancesCallback1(char* RxBuffer,uint16_t Length){
+	uint32_t index = 0;
+	index += sprintf(&Buffer[index], "%s", "ActDistances=[");
+	for(uint16_t i = 0; i<numdistances; i++){
+		index += sprintf(&Buffer[index], "%d,",distances[i]);
+	}
+	index += sprintf(&Buffer[index-1], "]");
+
+	index = 0;
+	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
+	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
+	UARTclearBuffer();
+	UARTsetStartIndicatorCallback(ESP8255_IPD_SendDistancesCallback2);
+	UARTStartTransfersCB(Buffer2,0);	//because of listen to >
+}
+
+void ESP8255_IPD_SendDistancesCallback2(char* RxBuffer,uint16_t Length){
 	UARTclearBuffer();
 	UARTStartTransfersCB(Buffer,ESP8266ExpectSendOkCallback);
 }

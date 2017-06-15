@@ -78,11 +78,9 @@ uint8_t WLANgetTCPConnectionStatus(){
 void WlanHandledTCPmessageCallback(uint8_t Error){
 	if(Error){
 		debug_printf("Handle TCP-Message failed! \n\r");
-		TCPConnectionStatus = 0;
 	}
 	else{
 		TCPConnectionStatus = 1;
-		debug_printf("Successfully handled TCP-Message!\n\r");
 		WLANstartTCPlistener();
 	}
 }
