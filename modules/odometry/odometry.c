@@ -63,7 +63,7 @@ void updateAllCallback2(void){
 	if(alphaLeft_rad >= M_PI || alphaLeft_rad <= -M_PI){
 		deltaTheta_rad += M_PI;
 	}
-	currentStatus.position.posX -= cos(currentStatus.theta)*deltaX-sin(currentStatus.theta)*deltaY;
+	currentStatus.position.posX += cos(currentStatus.theta)*deltaX-sin(currentStatus.theta)*deltaY;
 	currentStatus.position.posY -= sin(currentStatus.theta)*deltaX+cos(currentStatus.theta)*deltaY;
 	currentStatus.theta += deltaTheta_rad;
 	if(currentStatus.theta < -M_PI){
