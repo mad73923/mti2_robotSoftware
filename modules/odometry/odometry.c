@@ -56,21 +56,20 @@ void updateAllCallback2(void){
 	}
 	float deltaSLeft = (deltaThetaLeft*M_PI/180.0) * (ODO_wheelDiameter / 2.0);
 	float alphaLeft_rad = deltaSLeft/(ODO_halfAxialLength * 2.0);
-	float deltaX = (cos(alphaLeft_rad)*ODO_halfAxialLength) - ODO_halfAxialLength;
+	float deltaX = ODO_halfAxialLength - (cos(alphaLeft_rad)*ODO_halfAxialLength);
 	float deltaY = sin(alphaLeft_rad)*ODO_halfAxialLength;
 	float cSlash = tan(alphaLeft_rad)*ODO_halfAxialLength;
 	float deltaTheta_rad = atan2(ODO_halfAxialLength, cSlash) - M_PI_2;
 	if(alphaLeft_rad >= M_PI || alphaLeft_rad <= -M_PI){
 		deltaTheta_rad += M_PI;
 	}
-	float theta_rad = currentStatus.theta * M_PI/180.0;
-	currentStatus.position.posX += roundf(cos(theta_rad)*deltaX-sin(theta_rad)*deltaY);
-	currentStatus.position.posY += roundf(sin(theta_rad)*deltaX+cos(theta_rad)*deltaY);
-	currentStatus.theta += deltaTheta_rad * 180.0 / M_PI;
-	if(currentStatus.theta < -180.0){
-		currentStatus.theta += 360.0;
-	}else if(currentStatus.theta > 180){
-		currentStatus.theta -= 360.0;
+	currentStatus.position.posX -= cos(currentStatus.theta)*deltaX-sin(currentStatus.theta)*deltaY;
+	currentStatus.position.posY -= sin(currentStatus.theta)*deltaX+cos(currentStatus.theta)*deltaY;
+	currentStatus.theta += deltaTheta_rad;
+	if(currentStatus.theta < -M_PI){
+		currentStatus.theta += 2.0*M_PI;
+	}else if(currentStatus.theta > M_PI){
+		currentStatus.theta -= 2.0*M_PI;
 	}
 	oldStatus = currentStatus;
 }

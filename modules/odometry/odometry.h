@@ -17,8 +17,8 @@ typedef struct{
 }wheel;
 
 typedef struct{
-	int32_t posX;
-	int32_t posY;
+	float posX;
+	float posY;
 }point;
 
 typedef struct{
