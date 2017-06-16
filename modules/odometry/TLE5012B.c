@@ -279,10 +279,17 @@ void CS_init(void){
 void CS_activateSide(TLE5012B_ACT_t side){
 	if(side == TLE_LEFT){
 		CS_activateLeft();
+	}else if(side == TLE_RIGHT){
+		CS_activateRight();
 	}
 }
 
 void CS_activateLeft(void){
+	LL_GPIO_ResetOutputPin(TLE5012B_CS_PORT_L, TLE5012B_CS_PIN_L);
+}
+
+void CS_activateRight(void){
+	//TODO left side for testing
 	LL_GPIO_ResetOutputPin(TLE5012B_CS_PORT_L, TLE5012B_CS_PIN_L);
 }
 
