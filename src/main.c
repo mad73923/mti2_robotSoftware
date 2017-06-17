@@ -13,63 +13,62 @@
 
 
 /*!!!SERVO TEST!!!*/
-int main(void){
-	system_init();
-	debug_init();
-
-	//Init
-	env_timer_init();
-	servo_timer_init();
-	int i = 0;
-	servo_set_angle(i);
-
-	uint32_t cnt = 0;
-	while(1){
-
-		LL_mDelay(200);
-		i++;
-		if(i==19){
-			i=0;
-			servo_set_angle(i);
-			LL_mDelay(400);
-		}
-		servo_set_angle(i);
-
-	}
-}
-
-
-/*ADC-DRIVER_TEST*/
 //int main(void){
 //	system_init();
+//	debug_init();
 //
 //	//Init
-//	LED2_GPIO_CLK_ENABLE();
-//	LL_GPIO_SetPinMode(LED2_GPIO_PORT, LED2_PIN, LL_GPIO_MODE_OUTPUT);
-//	Configure_ADC();
-//	Activate_ADC();
-//	uint32_t ii=0;
-//	int32_t shit=0;
+//	env_timer_init();
+//	servo_timer_init();
+//	adc_init();
+//	start_env_data_collector();
 //
+//	uint32_t i=0;
 //	while(1){
 //
-//		ii++;
-//		if(ii==100000){
-//			if ((LL_ADC_IsEnabled(ADC1) == 1) && (LL_ADC_IsDisableOngoing(ADC1) == 0) && (LL_ADC_REG_IsConversionOngoing(ADC1) == 0))
-//			{
-//			  LL_ADC_REG_StartConversion(ADC1);
-//			}
-//			ii=0;
-//			shit = getBackSensorValue();
+//		LL_mDelay(200);
+//		i++;
+//		if(i==19){
+//			i=0;
+//			servo_set_angle(i);
+//			LL_mDelay(400);
 //		}
-//		if(shit < 200){
-//			LL_GPIO_SetOutputPin(LED2_GPIO_PORT, LED2_PIN);
-//		}else{
-//			LL_GPIO_ResetOutputPin(LED2_GPIO_PORT, LED2_PIN);
-//		}
+//		servo_set_angle(i);
 //
 //	}
 //}
+
+
+/*ADC-DRIVER_TEST*/
+int main(void){
+	system_init();
+
+	//Init
+	LED2_GPIO_CLK_ENABLE();
+	LL_GPIO_SetPinMode(LED2_GPIO_PORT, LED2_PIN, LL_GPIO_MODE_OUTPUT);
+	adc_init();
+	uint32_t ii=0;
+	int32_t shit=0;
+
+	while(1){
+
+		ii++;
+		if(ii==100000){
+			if ((LL_ADC_IsEnabled(ADC1) == 1) && (LL_ADC_IsDisableOngoing(ADC1) == 0) && (LL_ADC_REG_IsConversionOngoing(ADC1) == 0))
+			{
+			  LL_ADC_REG_StartConversion(ADC1);
+			}
+			ii=0;
+			shit = getBackSensorValue();
+		}
+		if(shit < 200){
+			LL_GPIO_SetOutputPin(LED2_GPIO_PORT, LED2_PIN);
+		}else{
+			LL_GPIO_ResetOutputPin(LED2_GPIO_PORT, LED2_PIN);
+		}
+
+	}
+}
 
 
 /*MOTOR-DRIVER-TEST*/
