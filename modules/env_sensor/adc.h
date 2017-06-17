@@ -28,9 +28,10 @@
 #define ADC_PIN1							LL_GPIO_PIN_0
 #define ADC_PIN2							LL_GPIO_PIN_1
 #define ADC_INTERRUPT						ADC1_2_IRQn
-#define ADC_INTERRUPT_HANDLER()					ADC1_2_IRQHandler()
+#define ADC_INTERRUPT_HANDLER()				ADC1_2_IRQHandler()
 #define PORT_CLK_ENABLE						LL_AHB2_GRP1_PERIPH_GPIOA
-#define NR_VALUES 36
+#define NR_VALUES 38
+#define PI_OFFSET 18
 
 /* Struct distValues in mm */
 struct distValues {
@@ -43,6 +44,8 @@ struct distValues getFrontBackDistance(void);
 void    adc_init(void);
 uint16_t getFrontSensorValue();
 uint16_t getBackSensorValue();
+uint16_t * getDistancesArray();
+char getCurrentDistanceArrayIndex();
 
 /* Private Function prototypes */
 void 	ADC1_2_IRQHandler(void);

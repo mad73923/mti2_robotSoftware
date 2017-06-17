@@ -7,9 +7,12 @@
 #include "adc.h"
 
 /*Private Variables*/
-volatile uint16_t 	linearization = 0.0;
-volatile float	a = -1.3838;
-volatile float	b = 2.8372;
+__IO float 	linearization = 0.0;
+__IO float	a = -1.3838;
+__IO float	b = 2.8372;
+__IO char arrayIterator = 0;
+__IO char arrayFlag = 0;
+__IO int8_t counterTwo = 0;
 
 /**
   * @brief  This function configures the ADC1 for PORT A PIN 0 (FRONTSENSOR) & 1 (BACKSENSOR)
@@ -128,18 +131,39 @@ void ADC_INTERRUPT_HANDLER()
 
 	/* ADC on Pin PA0 is first converted, then PA1. The very first converted value corresponds to PA0 */
 	/* With this formula, the internal ADC-value is converted into mm-distance */
-	linearization = (uint16_t)(10*exp(b)* pow((LL_ADC_REG_ReadConversionData12(ADC_NR)/1241.21),a));
+	linearization = (10*exp(b)* pow((LL_ADC_REG_ReadConversionData12(ADC_NR)/1241.21),a));
 
-	//servo_set_angle(9);
-
-	if(startEnvFlag)
-	{
+	/* This function block writes the linearized ADC-Distance-Value into the distances-array.
+	 * To start this function block the corresponding function in env_sensor.c has to be called.
+	 * The frontFlag is to differentiate between front and back-sensor-data. */
+	if(startEnvFlag){
 
 		if(frontFlag){
-
+			distances_data[arrayIterator]=(uint16_t)linearization;
 		}else{
-
+			distances_data[arrayIterator+PI_OFFSET]=(uint16_t)linearization;
 		}
+
+		if(counterTwo == 1){
+
+			if(arrayFlag){
+				servo_set_angle(arrayIterator--);
+			}else{
+				servo_set_angle(arrayIterator++);
+			}
+
+			counterTwo=-1;
+		}
+		counterTwo++;
+
+		if(arrayIterator == 19){
+			arrayFlag = !arrayFlag;
+			arrayIterator = 17;
+		}else if(arrayIterator == 255){
+			arrayFlag = !arrayFlag;
+			arrayIterator=1;
+		}
+
 	}
 
 	aADCxConvertedData[frontFlag] = linearization;
@@ -178,4 +202,25 @@ uint16_t getFrontSensorValue()
 uint16_t getBackSensorValue()
 {
 	return aADCxConvertedData[1];
+}
+
+/**
+  * @brief  This function returns the pointer of the first distances-array-value.
+  * @param  None
+  * @retval Back value in mm
+  */
+uint16_t * getDistancesData()
+{
+	return distances_data;
+}
+
+/**
+  * @brief  This function returns the current index of the written distance-sensor
+  * 		array position.
+  * @param  None
+  * @retval Back value in mm
+  */
+char getCurrentDistanceArrayIndex()
+{
+	return arrayIterator;
 }
