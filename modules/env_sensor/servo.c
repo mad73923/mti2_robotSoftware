@@ -16,7 +16,7 @@
   * @retval The Compare_Value from the PWM-Channel if the input value is correct
   * 		If the input value is false, then -1 will be returned
   */
-int servo_set_angle(int iAngle){
+uint16_t servo_set_angle(uint16_t iAngle){
 	if(iAngle < 0){
 		LL_TIM_OC_SetCompareCH2(TIM8, servo_set_angle(0));
 		return -1;

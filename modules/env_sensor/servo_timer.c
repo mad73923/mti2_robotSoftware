@@ -19,7 +19,7 @@
 void servo_timer_init(void){
 
   /* Enable GPIO-CLK for PORTC */
-  MOTOR_GPIO_CLK_ENABLEC();
+  MOTOR_GPIO_CLK_ENABLE();
 
   /* GPIO TIM8_CH2 configuration */
   LL_GPIO_SetPinMode(MOTORSERVO_PORT, MOTORSERVO_PWM_PIN, LL_GPIO_MODE_ALTERNATE);
@@ -32,40 +32,40 @@ void servo_timer_init(void){
   /******************************/
 
   /* Enable the timer peripheral clock */
-  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM8);
+  LL_APB2_GRP1_EnableClock(TIMER_CLK_ENABLE);
 
 
   /* Set the pre-scaler value to have TIM8 counter clock equal to 2 MHz */
-  LL_TIM_SetPrescaler(TIM8, __LL_TIM_CALC_PSC(SystemCoreClock, 2000000));
+  LL_TIM_SetPrescaler(MOTORSERVO_TIMER, __LL_TIM_CALC_PSC(SystemCoreClock, MOTORSERVO_TIMER_PSC_FREQ));
 
   /* Enable TIM8_ARR register preload. Writing to or reading from the     */
   /* auto-reload register accesses the preload register.			      */
-  LL_TIM_EnableARRPreload(TIM8);
+  LL_TIM_EnableARRPreload(MOTORSERVO_TIMER);
 
   /* Set the auto-reload value to have a counter frequency of 50 Hz */
-  LL_TIM_SetAutoReload(TIM8, __LL_TIM_CALC_ARR(SystemCoreClock, LL_TIM_GetPrescaler(TIM8), 50));
+  LL_TIM_SetAutoReload(MOTORSERVO_TIMER, __LL_TIM_CALC_ARR(SystemCoreClock, LL_TIM_GetPrescaler(MOTORSERVO_TIMER), MOTORSERVO_TIMER_AR_FREQ));
 
   /*********************************/
   /* Output waveform configuration */
   /*********************************/
-  LL_TIM_OC_SetMode(TIM8, LL_TIM_CHANNEL_CH2, LL_TIM_OCMODE_PWM1);
+  LL_TIM_OC_SetMode(MOTORSERVO_TIMER, MOTORSERVO_PWM_CHANNEL, LL_TIM_OCMODE_PWM1);
 
   /* Set compare value */
-  LL_TIM_OC_SetCompareCH2(TIM8, 1050);
+  LL_TIM_OC_SetCompareCH2(MOTORSERVO_TIMER, MOTORSERVO_PWM_CC_VALUE);
 
 
-  LL_TIM_OC_EnablePreload(TIM8, LL_TIM_CHANNEL_CH2);
+  LL_TIM_OC_EnablePreload(MOTORSERVO_TIMER, MOTORSERVO_PWM_CHANNEL);
 
   /**********************************/
   /* Start output signal generation */
   /**********************************/
   /* Enable Output Channel 2 */
-  LL_TIM_CC_EnableChannel(TIM8, LL_TIM_CHANNEL_CH2);
+  LL_TIM_CC_EnableChannel(MOTORSERVO_TIMER, MOTORSERVO_PWM_CHANNEL);
 
 
   /* Enable counter */
-  LL_TIM_EnableCounter(TIM8);
+  LL_TIM_EnableCounter(MOTORSERVO_TIMER);
 
   /* Enable Outputs for TIM8 CH2 */
-  LL_TIM_EnableAllOutputs(TIM8);
+  LL_TIM_EnableAllOutputs(MOTORSERVO_TIMER);
 }
