@@ -46,13 +46,15 @@ uint16_t getFrontSensorValue();
 uint16_t getBackSensorValue();
 uint16_t * getDistancesArray();
 char getCurrentDistanceArrayIndex();
+void linearizeADCRawData();
 
 /* Private Function prototypes */
 void 	ADC1_2_IRQHandler(void);
 
 /* Public variables */
 /* Variables for ADC conversion data */
-__IO uint16_t aADCxConvertedData[ADC_CONVERTED_DATA_BUFFER_SIZE]; /* ADC group regular conversion data in mm */
+__IO uint16_t analogRawData[ADC_CONVERTED_DATA_BUFFER_SIZE]; /* ADC group regular conversion data in mm */
+__IO uint16_t analoglinearizedData[ADC_CONVERTED_DATA_BUFFER_SIZE]; /* ADC group regular conversion data in mm */
 __IO uint8_t frontFlag; /* Flag to differentiate between front-sensor and back-sensor data */
 __IO uint8_t startEnvFlag; /* Flat to start environment sensing */
 __IO uint16_t distances_data [NR_VALUES];

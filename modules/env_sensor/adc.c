@@ -10,9 +10,9 @@
 __IO float 	linearization = 0.0;
 __IO float	a = -1.3838;
 __IO float	b = 2.8372;
+__IO const float linFactor = 170.6791;
 __IO char arrayIterator = 0;
-__IO char arrayFlag = 0;
-__IO int8_t counterTwo = 0;
+__IO int8_t counterDelay = 0;
 
 /**
   * @brief  This function configures the ADC1 for PORT A PIN 0 (FRONTSENSOR) & 1 (BACKSENSOR)
@@ -131,45 +131,46 @@ void ADC_INTERRUPT_HANDLER()
 
 	/* ADC on Pin PA0 is first converted, then PA1. The very first converted value corresponds to PA0 */
 	/* With this formula, the internal ADC-value is converted into mm-distance */
-	linearization = (10*exp(b)* pow((LL_ADC_REG_ReadConversionData12(ADC_NR)/1241.21),a));
+	analogRawData[frontFlag] = LL_ADC_REG_ReadConversionData12(ADC_NR);
+	frontFlag = !frontFlag;
 
 	/* This function block writes the linearized ADC-Distance-Value into the distances-array.
 	 * To start this function block the corresponding function in env_sensor.c has to be called.
 	 * The frontFlag is to differentiate between front and back-sensor-data. */
 	if(startEnvFlag){
 
-		if(frontFlag){
-			distances_data[arrayIterator]=(uint16_t)linearization;
-		}else{
-			distances_data[arrayIterator+PI_OFFSET]=(uint16_t)linearization;
-		}
-
-		if(counterTwo == 1){
-
-			if(arrayFlag){
-				servo_set_angle(arrayIterator--);
+		if(counterDelay == 1){
+			servo_set_angle(arrayIterator++);
+			linearizeADCRawData();
+			if(arrayIterator==19){
+				arrayIterator = 0;
+				counterDelay = -1;
+			}else if(arrayIterator == 1){
+				counterDelay = -10;
 			}else{
-				servo_set_angle(arrayIterator++);
+				counterDelay=-1;
 			}
-
-			counterTwo=-1;
 		}
-		counterTwo++;
+		counterDelay++;
 
-		if(arrayIterator == 19){
-			arrayFlag = !arrayFlag;
-			arrayIterator = 17;
-		}else if(arrayIterator == 255){
-			arrayFlag = !arrayFlag;
-			arrayIterator=1;
-		}
 
 	}
 
-	aADCxConvertedData[frontFlag] = linearization;
-	frontFlag = !frontFlag;
 }
 
+/**
+  * @brief  This function linearizes the ADC-Raw-Data and puts the
+  * 		values into distances_data.
+  * @param  None
+  * @retval None
+  */
+void linearizeADCRawData()
+{
+		distances_data[arrayIterator-1]=(uint16_t)(linFactor * pow((analogRawData[0]/1241.21),a));
+		distances_data[arrayIterator-1+PI_OFFSET]=(uint16_t)(linFactor * pow((analogRawData[1]/1241.21),a));
+		analoglinearizedData[0]=distances_data[arrayIterator-1];
+		analoglinearizedData[1]=distances_data[arrayIterator-1+PI_OFFSET];
+}
 /**
   * @brief  This function maps the distance front and back values
   * 		into a distValues struct and returns it.
@@ -179,8 +180,8 @@ void ADC_INTERRUPT_HANDLER()
 struct distValues getFrontBackDistance(void)
 {
 	struct distValues distances;
-	distances.front = aADCxConvertedData[0];
-	distances.back = aADCxConvertedData[1];
+	distances.front = analoglinearizedData[0];
+	distances.back = analoglinearizedData[1];
 	return distances;
 }
 
@@ -191,7 +192,7 @@ struct distValues getFrontBackDistance(void)
   */
 uint16_t getFrontSensorValue()
 {
-	return aADCxConvertedData[0];
+	return analoglinearizedData[0];
 }
 
 /**
@@ -201,7 +202,7 @@ uint16_t getFrontSensorValue()
   */
 uint16_t getBackSensorValue()
 {
-	return aADCxConvertedData[1];
+	return analoglinearizedData[1];
 }
 
 /**
@@ -211,7 +212,7 @@ uint16_t getBackSensorValue()
   */
 uint16_t * getDistancesData()
 {
-	return distances_data;
+	return *distances_data;
 }
 
 /**

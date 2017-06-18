@@ -20,13 +20,13 @@
 //	//Init
 //	env_timer_init();
 //	servo_timer_init();
-//	adc_init();
-//	start_env_data_collector();
+////	adc_init();
+////	start_env_data_collector();
 //
 //	uint32_t i=0;
 //	while(1){
 //
-//		LL_mDelay(200);
+//		LL_mDelay(100);
 //		i++;
 //		if(i==19){
 //			i=0;
@@ -46,7 +46,10 @@ int main(void){
 	//Init
 	LED2_GPIO_CLK_ENABLE();
 	LL_GPIO_SetPinMode(LED2_GPIO_PORT, LED2_PIN, LL_GPIO_MODE_OUTPUT);
+	env_timer_init();
+	servo_timer_init();
 	adc_init();
+	start_env_data_collector();
 	uint32_t ii=0;
 	int32_t shit=0;
 
@@ -54,10 +57,10 @@ int main(void){
 
 		ii++;
 		if(ii==100000){
-			if ((LL_ADC_IsEnabled(ADC1) == 1) && (LL_ADC_IsDisableOngoing(ADC1) == 0) && (LL_ADC_REG_IsConversionOngoing(ADC1) == 0))
-			{
-			  LL_ADC_REG_StartConversion(ADC1);
-			}
+//			if ((LL_ADC_IsEnabled(ADC1) == 1) && (LL_ADC_IsDisableOngoing(ADC1) == 0) && (LL_ADC_REG_IsConversionOngoing(ADC1) == 0))
+//			{
+//			  LL_ADC_REG_StartConversion(ADC1);
+//			}
 			ii=0;
 			shit = getBackSensorValue();
 		}
