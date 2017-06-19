@@ -6,11 +6,7 @@
  */
 #include "adc.h"
 
-/*Private Variables*/
-__IO float 	linearization = 0.0;
-__IO float	a = -1.3838;
-__IO float	b = 2.8372;
-__IO const float linFactor = 170.6791;
+/* Private variables */
 __IO char arrayIterator = 0;
 __IO int8_t counterDelay = 0;
 
@@ -131,17 +127,18 @@ void ADC_INTERRUPT_HANDLER()
 
 	/* ADC on Pin PA0 is first converted, then PA1. The very first converted value corresponds to PA0 */
 	/* With this formula, the internal ADC-value is converted into mm-distance */
+	/* The frontFlag is to differentiate between front and back-sensor-data. */
 	analogRawData[frontFlag] = LL_ADC_REG_ReadConversionData12(ADC_NR);
 	frontFlag = !frontFlag;
 
-	/* This function block writes the linearized ADC-Distance-Value into the distances-array.
-	 * To start this function block the corresponding function in env_sensor.c has to be called.
-	 * The frontFlag is to differentiate between front and back-sensor-data. */
+	 /* To start this function block the corresponding function in env_sensor.c has to be called.*/
 	if(startEnvFlag){
 
 		if(counterDelay == 1){
+
 			servo_set_angle(arrayIterator++);
 			linearizeADCRawData();
+
 			if(arrayIterator==19){
 				arrayIterator = 0;
 				counterDelay = -1;
@@ -150,9 +147,9 @@ void ADC_INTERRUPT_HANDLER()
 			}else{
 				counterDelay=-1;
 			}
+
 		}
 		counterDelay++;
-
 
 	}
 
@@ -168,8 +165,6 @@ void linearizeADCRawData()
 {
 		distances_data[arrayIterator-1]=(uint16_t)(linFactor * pow((analogRawData[0]/1241.21),a));
 		distances_data[arrayIterator-1+PI_OFFSET]=(uint16_t)(linFactor * pow((analogRawData[1]/1241.21),a));
-		analoglinearizedData[0]=distances_data[arrayIterator-1];
-		analoglinearizedData[1]=distances_data[arrayIterator-1+PI_OFFSET];
 }
 /**
   * @brief  This function maps the distance front and back values
@@ -180,29 +175,29 @@ void linearizeADCRawData()
 struct distValues getFrontBackDistance(void)
 {
 	struct distValues distances;
-	distances.front = analoglinearizedData[0];
-	distances.back = analoglinearizedData[1];
+	distances.front = (uint16_t)(linFactor * pow((analogRawData[0]/1241.21),a));
+	distances.back = (uint16_t)(linFactor * pow((analogRawData[1]/1241.21),a));
 	return distances;
 }
 
 /**
-  * @brief  This function returns the front sensor value.
+  * @brief  This function returns the linearized front sensor value.
   * @param  None
   * @retval Front value in mm
   */
 uint16_t getFrontSensorValue()
 {
-	return analoglinearizedData[0];
+	return (uint16_t)(linFactor * pow((analogRawData[0]/1241.21),a));
 }
 
 /**
-  * @brief  This function returns the back sensor value.
+  * @brief  This function returns the linearized back sensor value.
   * @param  None
   * @retval Back value in mm
   */
 uint16_t getBackSensorValue()
 {
-	return analoglinearizedData[1];
+	return (uint16_t)(linFactor * pow((analogRawData[1]/1241.21),a));
 }
 
 /**
@@ -210,7 +205,7 @@ uint16_t getBackSensorValue()
   * @param  None
   * @retval Back value in mm
   */
-uint16_t * getDistancesData()
+uint16_t * getDistancesArray()
 {
 	return *distances_data;
 }

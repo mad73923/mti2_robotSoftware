@@ -55,9 +55,13 @@ void 	ADC1_2_IRQHandler(void);
 /* Variables for ADC conversion data */
 __IO uint16_t analogRawData[ADC_CONVERTED_DATA_BUFFER_SIZE]; /* ADC group regular conversion data in mm */
 __IO uint16_t analoglinearizedData[ADC_CONVERTED_DATA_BUFFER_SIZE]; /* ADC group regular conversion data in mm */
+__IO uint16_t distances_data [NR_VALUES];
 __IO uint8_t frontFlag; /* Flag to differentiate between front-sensor and back-sensor data */
 __IO uint8_t startEnvFlag; /* Flat to start environment sensing */
-__IO uint16_t distances_data [NR_VALUES];
 
+/* Linearization Constants */
+__IO const float	a = -1.3838;
+__IO const float	b = 2.8372;
+__IO const float linFactor = 170.6791;
 
 #endif /* ENV_SENSOR_ADC_H_ */

@@ -1,5 +1,5 @@
 /*
- * servo_timer.c
+* servo_timer.c
  *
  *  Created on: 17.05.2017
  *      Author: felix
