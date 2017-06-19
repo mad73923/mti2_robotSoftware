@@ -9,6 +9,10 @@
 /* Private variables */
 __IO char arrayIterator = 0;
 __IO int8_t counterDelay = 0;
+/* Linearization Constants */
+__IO const float	a = -1.3838;
+__IO const float	b = 2.8372;
+__IO const float linFactor = 170.6791;
 
 /**
   * @brief  This function configures the ADC1 for PORT A PIN 0 (FRONTSENSOR) & 1 (BACKSENSOR)

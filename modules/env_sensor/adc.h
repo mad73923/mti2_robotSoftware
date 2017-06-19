@@ -59,9 +59,4 @@ __IO uint16_t distances_data [NR_VALUES];
 __IO uint8_t frontFlag; /* Flag to differentiate between front-sensor and back-sensor data */
 __IO uint8_t startEnvFlag; /* Flat to start environment sensing */
 
-/* Linearization Constants */
-__IO const float	a = -1.3838;
-__IO const float	b = 2.8372;
-__IO const float linFactor = 170.6791;
-
 #endif /* ENV_SENSOR_ADC_H_ */
