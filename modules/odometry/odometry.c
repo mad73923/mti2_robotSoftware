@@ -27,6 +27,7 @@ void updateAllCallback2(void);
 
 void odometry_init(void){
 	sensor_init();
+	currentStatus.theta = M_PI_2;
 }
 
 void odometry_updateStatus_async(void){
@@ -64,8 +65,8 @@ void updateAllCallback2(void){
 	if(alphaLeft_rad >= M_PI || alphaLeft_rad <= -M_PI){
 		deltaTheta_rad += M_PI;
 	}
-	float deltaXLeft_global = cos(currentStatus.theta)*deltaXLeft-sin(currentStatus.theta)*deltaYLeft;
-	float deltaYLeft_global = sin(currentStatus.theta)*deltaXLeft+cos(currentStatus.theta)*deltaYLeft;
+	float deltaXLeft_global = -sin(currentStatus.theta)*deltaXLeft+cos(currentStatus.theta)*deltaYLeft;
+	float deltaYLeft_global = cos(currentStatus.theta)*deltaXLeft-sin(currentStatus.theta)*deltaYLeft;
 	// right wheel
 	float deltaThetaRight;
 	if(oldStatus.right.angle < -100 && currentStatus.right.angle > 100){
@@ -84,11 +85,11 @@ void updateAllCallback2(void){
 	if(alphaRight_rad >= M_PI || alphaRight_rad <= -M_PI){
 		deltaTheta_rad += M_PI;
 	}
-	float deltaXRight_global = cos(currentStatus.theta)*deltaXRight-sin(currentStatus.theta)*deltaYRight;
-	float deltaYRight_global = sin(currentStatus.theta)*deltaXRight+cos(currentStatus.theta)*deltaYRight;
+	float deltaXRight_global = -sin(currentStatus.theta)*deltaXRight+cos(currentStatus.theta)*deltaYRight;
+	float deltaYRight_global = cos(currentStatus.theta)*deltaXRight-sin(currentStatus.theta)*deltaYRight;
 
 	currentStatus.position.posX -= deltaXLeft_global+deltaXRight_global;
-	currentStatus.position.posY -= deltaYLeft_global+deltaYRight_global;
+	currentStatus.position.posY -= -deltaYLeft_global-deltaYRight_global;
 	currentStatus.theta += deltaTheta_rad;
 	if(currentStatus.theta < -M_PI){
 		currentStatus.theta += 2.0*M_PI;
