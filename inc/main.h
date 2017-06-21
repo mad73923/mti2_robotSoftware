@@ -9,7 +9,7 @@
 #define MAIN_H_
 
 #include "../modules/system/system.h"
-
+#include "../modules/debug/debug.h"
 
 
 #endif /* MAIN_H_ */
