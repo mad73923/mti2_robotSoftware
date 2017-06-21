@@ -209,7 +209,7 @@ uint16_t getBackSensorValue()
   * @param  None
   * @retval Back value in mm
   */
-uint16_t * getDistancesArray()
+uint16_t *getDistancesArray()
 {
 	return *distances_data;
 }

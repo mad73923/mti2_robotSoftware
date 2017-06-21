@@ -53,22 +53,10 @@ int main(void){
 	uint32_t ii=0;
 	int32_t shit=0;
 
+	uint16_t *point;
 	while(1){
-
-		ii++;
-		if(ii==100000){
-//			if ((LL_ADC_IsEnabled(ADC1) == 1) && (LL_ADC_IsDisableOngoing(ADC1) == 0) && (LL_ADC_REG_IsConversionOngoing(ADC1) == 0))
-//			{
-//			  LL_ADC_REG_StartConversion(ADC1);
-//			}
-			ii=0;
-			shit = getBackSensorValue();
-		}
-		if(shit < 200){
-			LL_GPIO_SetOutputPin(LED2_GPIO_PORT, LED2_PIN);
-		}else{
-			LL_GPIO_ResetOutputPin(LED2_GPIO_PORT, LED2_PIN);
-		}
+		*point = getDistancesArray();
+		shit = *point;
 
 	}
 }
