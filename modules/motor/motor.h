@@ -12,8 +12,6 @@
 
 void configure_gpio(void);
 int32_t motor_setSpeed(char cMotor, int32_t iSpeed);
-//uint16_t motor_setDirection(char cMotor,char cDir);
-//uint16_t motor_setSpeedDir(char cMotor, char cDir, int iSpeed);
 void motor_stop(char cMotor);
 
 //

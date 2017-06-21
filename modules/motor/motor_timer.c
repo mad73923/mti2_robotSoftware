@@ -39,49 +39,49 @@ void motor_timer_init(void){
 	LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM4);
 	LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM3);
 
-	/* Set the pre-scaler value to have TIM4&3 counter clock equal to 200 kHz */
-	LL_TIM_SetPrescaler(TIM4, __LL_TIM_CALC_PSC(SystemCoreClock, 400000));
-	LL_TIM_SetPrescaler(TIM3, __LL_TIM_CALC_PSC(SystemCoreClock, 400000));
+	/* Set the pre-scaler value to have TIM4&3 counter clock equal to 400 kHz */
+	LL_TIM_SetPrescaler(MOTORLEFT_TIMER, __LL_TIM_CALC_PSC(SystemCoreClock, MOTORLEFT_PRESCALER_FREQ));
+	LL_TIM_SetPrescaler(MOTORRIGHT_TIMER, __LL_TIM_CALC_PSC(SystemCoreClock, MOTORRIGHT_PRESCALER_FREQ));
 
 	/* Enable TIM4|3_ARR register preload. Writing to or reading from the         */
 	/* auto-reload register accesses the preload register. The content of the   */
 	/* preload register are transferred into the shadow register at each update */
 	/* event (UEV).                                                             */
-	LL_TIM_EnableARRPreload(TIM4);
-	LL_TIM_EnableARRPreload(TIM3);
+	LL_TIM_EnableARRPreload(MOTORLEFT_TIMER);
+	LL_TIM_EnableARRPreload(MOTORRIGHT_TIMER);
 
 	/* Set the auto-reload value to have a counter frequency of 200 Hz */
-	LL_TIM_SetAutoReload(TIM4, __LL_TIM_CALC_ARR(SystemCoreClock, LL_TIM_GetPrescaler(TIM4), 200));
-	LL_TIM_SetAutoReload(TIM3, __LL_TIM_CALC_ARR(SystemCoreClock, LL_TIM_GetPrescaler(TIM3), 200));
+	LL_TIM_SetAutoReload(MOTORLEFT_TIMER, __LL_TIM_CALC_ARR(SystemCoreClock, LL_TIM_GetPrescaler(MOTORLEFT_TIMER), MOTORLEFT_ARR_FREQ));
+	LL_TIM_SetAutoReload(MOTORRIGHT_TIMER, __LL_TIM_CALC_ARR(SystemCoreClock, LL_TIM_GetPrescaler(MOTORRIGHT_TIMER), MOTORRIGHT_ARR_FREQ));
 
 	/*********************************/
 	/* Output waveform configuration */
 	/*********************************/
 	/* Set output mode */
 	/* Reset value is LL_TIM_OCMODE_FROZEN */
-	LL_TIM_OC_SetMode(TIM4, LL_TIM_CHANNEL_CH1, LL_TIM_OCMODE_PWM1);
-	LL_TIM_OC_SetMode(TIM3, LL_TIM_CHANNEL_CH2, LL_TIM_OCMODE_PWM1);
+	LL_TIM_OC_SetMode(MOTORLEFT_TIMER, MOTORLEFT_TIMER_PWM_CHANNEL, LL_TIM_OCMODE_PWM1);
+	LL_TIM_OC_SetMode(MOTORRIGHT_TIMER, MOTORRIGHT_TIMER_PWM_CHANNEL, LL_TIM_OCMODE_PWM1);
 
 	/* Set compare value to half of the counter period (50% duty cycle ) */
-	LL_TIM_OC_SetCompareCH1(TIM4, (LL_TIM_GetAutoReload(TIM4)/2));
-	LL_TIM_OC_SetCompareCH2(TIM3, (LL_TIM_GetAutoReload(TIM3)/2));
+	LL_TIM_OC_SetCompareCH1(MOTORLEFT_TIMER, (LL_TIM_GetAutoReload(MOTORLEFT_TIMER)/2));
+	LL_TIM_OC_SetCompareCH2(MOTORRIGHT_TIMER, (LL_TIM_GetAutoReload(MOTORRIGHT_TIMER)/2));
 
 	/* Enable TIM2_CCR1 register preload. Read/Write operations access the      */
 	/* preload register. TIM2_CCR1 preload value is loaded in the active        */
 	/* at each update event.                                                    */
-	LL_TIM_OC_EnablePreload(TIM4, LL_TIM_CHANNEL_CH1);
-	LL_TIM_OC_EnablePreload(TIM3, LL_TIM_CHANNEL_CH2);
+	LL_TIM_OC_EnablePreload(MOTORLEFT_TIMER, MOTORLEFT_TIMER_PWM_CHANNEL);
+	LL_TIM_OC_EnablePreload(MOTORRIGHT_TIMER, MOTORRIGHT_TIMER_PWM_CHANNEL);
 
 	/**********************************/
 	/* Start output signal generation */
 	/**********************************/
 	/* Enable output channel 1/2 */
-	LL_TIM_CC_EnableChannel(TIM4, LL_TIM_CHANNEL_CH1);
-	LL_TIM_CC_EnableChannel(TIM3, LL_TIM_CHANNEL_CH2);
+	LL_TIM_CC_EnableChannel(MOTORLEFT_TIMER, MOTORLEFT_TIMER_PWM_CHANNEL);
+	LL_TIM_CC_EnableChannel(MOTORRIGHT_TIMER, MOTORRIGHT_TIMER_PWM_CHANNEL);
 
 	/* Enable counter for timer4/3 */
-	LL_TIM_EnableCounter(TIM4);
-	LL_TIM_EnableCounter(TIM3);
+	LL_TIM_EnableCounter(MOTORLEFT_TIMER);
+	LL_TIM_EnableCounter(MOTORRIGHT_TIMER);
 }
 
 /**
@@ -92,10 +92,10 @@ void motor_timer_init(void){
 int32_t set_cc(char cMotor, int32_t iCC){
 
 	if(cMotor == MOTORLEFT){
-		LL_TIM_OC_SetCompareCH2(TIM3, iCC);
+		LL_TIM_OC_SetCompareCH2(MOTORRIGHT_TIMER, iCC);
 		return iCC;
 	}else if(cMotor == MOTORRIGHT){
-		LL_TIM_OC_SetCompareCH1(TIM4, iCC);
+		LL_TIM_OC_SetCompareCH1(MOTORLEFT_TIMER, iCC);
 		return iCC;
 	}else{
 		return -1;
