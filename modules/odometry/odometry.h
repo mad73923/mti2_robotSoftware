@@ -29,7 +29,7 @@ typedef struct{
 }odo_status;
 
 // all measures in mm
-#define ODO_wheelDiameter 65.0
+#define ODO_wheelRadius 32.5
 #define ODO_halfAxialLength 69.0
 
 void odometry_init(void);
