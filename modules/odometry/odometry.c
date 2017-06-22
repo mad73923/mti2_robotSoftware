@@ -89,7 +89,7 @@ void updateAllCallback2(void){
 	float deltaYRight_global = cos(currentStatus.theta)*deltaX-sin(currentStatus.theta)*deltaY;
 
 	currentStatus.position.posX -= deltaXLeft_global+deltaXRight_global;
-	currentStatus.position.posY -= -deltaYLeft_global-deltaYRight_global;
+	currentStatus.position.posY += deltaYLeft_global+deltaYRight_global;
 	currentStatus.theta += deltaTheta_rad;
 	if(currentStatus.theta < -M_PI){
 		currentStatus.theta += 2.0*M_PI;
