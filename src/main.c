@@ -29,8 +29,16 @@ int main(void){
 	while(WLANgetTCPConnectionStatus()!=1){
 
 	}
-	WLANstartTCPlistener();
 	while(1){
+//		if(WLANgetWLANConnectionStatus()==0){
+//			debug_printf("Start reconnecting WLAN!\n\r");
+//			WLANconnectToAp("RobotStation","StationPassword","10.42.0.10");
+//		}
+//		if(WLANgetWLANConnectionStatus()==0){
+//			debug_printf("Start reconnecting TCP!\n\r");
+//			WLANconnectToTCPserver("10.42.0.143","2323");
+//		}
+
 
 	}
 }

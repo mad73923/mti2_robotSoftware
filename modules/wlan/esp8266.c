@@ -41,6 +41,7 @@ void ESP8266ExpectOKCallback(char* buffer, uint16_t length);
 void ESP8266ExpectIPDCallback(char* buffer, uint16_t length);
 void ESP8266ExpectStartIndicatorCallback(char* buffer, uint16_t length);
 void ESP8266ExpectSendOkCallback(char* buffer, uint16_t length);
+void ESP8266ExpectWIFI_CONNECTEDCallback(char* buffer, uint16_t length);
 
 void ESP8266connectToApCallback1(char* Buffer,uint16_t Length);
 void ESP8266connectToApCallback2(char* Buffer,uint16_t Length);
@@ -86,6 +87,12 @@ void ESP8266connectToAp(const char* SSID,const char* PW,const char* IP, void(*ES
 	ESP8266_readyReceived = ESP8266connectToApCallback1;
 	UARTclearBuffer();
 	UARTStartTransfersCB("AT+RST\r\n",ESP8266ExpectReadyCallback);
+}
+
+void ESP8266reconnectToWLAN(void(*ESP8266readyCallback)(uint8_t)){
+	mutex_lock();
+	esp8266readyCallback = ESP8266readyCallback;
+	UARTsetNewLineCallback(ESP8266ExpectWIFI_CONNECTEDCallback);
 }
 
 void ESP8266connectToTCPserver(const char* IP, const char* Port, void(*ESP8266readyCallback)(uint8_t)){
@@ -135,38 +142,6 @@ uint8_t ESP8266sendTCPmessage(const char* Message){
 	return returnval;
 }
 
-
-//uint8_t ESP8266handleTCP(void){
-//		if(strcmp(ptrMessage,"GetDistances?")==0){
-//			debug_printf("Robot was asked for Distances\n\r");
-//			strcpy(Buffer,"ActDistances=[");
-//			uint16_t Dist[36];
-//			for(int i=0;i<36;i++){
-//					Dist[i] = i*20;
-//			}
-//			for(int i =0;i<36;i++){
-//				if(i<(36-1)){
-//					sprintf(Buffer2,"%d,",Dist[i]);
-//				}
-//				else{
-//					sprintf(Buffer2,"%d]",Dist[i]);
-//				}
-//				strcat(Buffer,Buffer2);
-//			}
-//			strcpy(Buffer3,"AT+CIPSEND=");
-//			sprintf(Buffer2,"%d",strlen(Buffer));
-//			strcat(Buffer3,Buffer2);
-//			strcat(Buffer3,"\r\n");
-//			UARTStartTransfers(Buffer3);
-//			actTCPstate = wait_for_Dist_startindicator;
-//			break;
-//		}
-//		debug_printf("Recieved not known command!");
-//		break;
-//	}
-//
-//}
-
 void ESP8266ExpectReadyCallback(char* buffer, uint16_t length){
 	if(strstr(buffer,"ready")){
 	//		debug_printf("ready recieved!\n\r");
@@ -175,13 +150,29 @@ void ESP8266ExpectReadyCallback(char* buffer, uint16_t length){
 		}
 	else if(strstr(buffer,"ERROR")){
 		mutex_unlock();
+		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
 		if(esp8266readyCallback!=0){
-			esp8266readyCallback(1);
 			esp8266readyCallback = 0;
+			esp8266readyCallbacktemp(1);
 		}
 	}
 	else{
 		UARTsetNewLineCallback(ESP8266ExpectReadyCallback);
+		UARTclearBuffer();
+	}
+}
+
+void ESP8266ExpectWIFI_CONNECTEDCallback(char* buffer, uint16_t length){
+	if(strstr(buffer,"WIFI CONNECTED")){
+		mutex_unlock();
+		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
+		if(esp8266readyCallback!=0){
+			esp8266readyCallback = 0;
+			esp8266readyCallbacktemp(0);
+		}
+		}
+	else{
+		UARTsetNewLineCallback(ESP8266ExpectWIFI_CONNECTEDCallback);
 		UARTclearBuffer();
 	}
 }
@@ -194,9 +185,19 @@ void ESP8266ExpectOKCallback(char* buffer, uint16_t length){
 		}
 	else if(strstr(buffer,"ERROR")){
 		mutex_unlock();
+		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
 		if(esp8266readyCallback!=0){
-			esp8266readyCallback(1);
 			esp8266readyCallback = 0;
+			esp8266readyCallbacktemp(1);
+		}
+	}
+	else if(strstr(buffer,"CLOSED")){
+		mutex_unlock();
+		UARTclearBuffer();
+		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
+		if(esp8266readyCallback!=0){
+			esp8266readyCallback = 0;
+			esp8266readyCallbacktemp(2);
 		}
 	}
 	else{
@@ -211,22 +212,33 @@ void ESP8266ExpectSendOkCallback(char* buffer, uint16_t length){
 		mutex_unlock();
 		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
 		if(esp8266readyCallback!=0){
+			esp8266readyCallback = 0;
 			esp8266readyCallbacktemp(0);
-
 		}
 	}
 	else if(strstr(buffer,"FAILED")){
 		mutex_unlock();
+		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
 		if(esp8266readyCallback!=0){
-			esp8266readyCallback(1);
 			esp8266readyCallback = 0;
+			esp8266readyCallbacktemp(1);
 		}
 	}
 	else if(strstr(buffer,"ERROR")){
 		mutex_unlock();
+		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
 		if(esp8266readyCallback!=0){
-			esp8266readyCallback(1);
 			esp8266readyCallback = 0;
+			esp8266readyCallbacktemp(1);
+		}
+	}
+	else if(strstr(buffer,"CLOSED")){
+		mutex_unlock();
+		UARTclearBuffer();
+		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
+		if(esp8266readyCallback!=0){
+			esp8266readyCallback = 0;
+			esp8266readyCallbacktemp(2);
 		}
 	}
 	else{
@@ -259,9 +271,28 @@ void ESP8266ExpectIPDCallback(char* buffer, uint16_t length){
 	else if(strstr(buffer,"ERROR")){
 		mutex_unlock();
 		UARTclearBuffer();
+		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
 		if(esp8266readyCallback!=0){
-			esp8266readyCallback(1);
 			esp8266readyCallback = 0;
+			esp8266readyCallbacktemp(1);
+		}
+	}
+	else if(strstr(buffer,"CLOSED")){
+		mutex_unlock();
+		UARTclearBuffer();
+		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
+		if(esp8266readyCallback!=0){
+			esp8266readyCallback = 0;
+			esp8266readyCallbacktemp(2);
+		}
+	}
+	else if(strstr(buffer,"WIFI DISCONNECT")){
+		mutex_unlock();
+		UARTclearBuffer();
+		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
+		if(esp8266readyCallback!=0){
+			esp8266readyCallback = 0;
+			esp8266readyCallbacktemp(3);
 		}
 	}
 	else{
@@ -305,9 +336,10 @@ void ESP8266connectToApCallback4(char* RxBuffer,uint16_t Length){
 void ESP8266connectToApCallback5(char* RxBuffer,uint16_t Length){
 	mutex_unlock();
 	UARTclearBuffer();
+	void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
 	if(esp8266readyCallback!=0){
-		esp8266readyCallback(0);
 		esp8266readyCallback = 0;
+		esp8266readyCallbacktemp(0);
 	}
 }
 
@@ -325,9 +357,11 @@ void ESP8266connectToTCPserverCallback1(char* RxBuffer,uint16_t Length){
 void ESP8266connectToTCPserverCallback2(char* RxBuffer,uint16_t Length){
 	mutex_unlock();
 	UARTclearBuffer();
+	void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
 	if(esp8266readyCallback!=0){
-		esp8266readyCallback(0);
 		esp8266readyCallback = 0;
+		esp8266readyCallbacktemp(0);
+
 	}
 }
 

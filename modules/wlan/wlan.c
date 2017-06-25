@@ -14,6 +14,8 @@ void WlanHandledTCPmessageCallback(uint8_t Error);
 
 uint8_t WLANConnectionStatus = 0;
 uint8_t TCPConnectionStatus = 0;
+char TCP_IP[20];
+char TCP_Port[5];
 
 void WLANinit(){
 	ESP8266init();
@@ -26,8 +28,20 @@ void WLANconnectToAp(const char* SSID,const char* PW,const char* IP){
 }
 
 void WLANconnectToTCPserver(const char* IP, const char* Port){
+	strcpy(TCP_IP,IP);
+	strcpy(TCP_Port,Port);
 	wlanreadyCallback = WlanConnectedToTCPcallback;
 	ESP8266connectToTCPserver(IP, Port,wlanreadyCallback);
+}
+
+void WLANreconnectToTCPserver(){
+	wlanreadyCallback = WlanConnectedToTCPcallback;
+	ESP8266connectToTCPserver(TCP_IP, TCP_Port,wlanreadyCallback);
+}
+
+void WLANreconnectToWLAN(){
+	wlanreadyCallback = WlanConnectedToApCallback;
+	ESP8266reconnectToWLAN(wlanreadyCallback);
 }
 
 void WLANstartTCPlistener(){
@@ -62,12 +76,14 @@ uint8_t WLANgetWLANConnectionStatus(){
 
 void WlanConnectedToTCPcallback(uint8_t Error){
 	if(Error){
-		debug_printf("TCP connection failed! \n\r");
+	//	debug_printf("TCP failed! \n\r");
 		TCPConnectionStatus = 0;
+		WLANreconnectToTCPserver();
 	}
 	else{
 		TCPConnectionStatus = 1;
 		debug_printf("TCP connection ready! \n\r");
+		WLANstartTCPlistener();
 	}
 }
 
@@ -76,11 +92,21 @@ uint8_t WLANgetTCPConnectionStatus(){
 }
 
 void WlanHandledTCPmessageCallback(uint8_t Error){
-	if(Error){
+	if(Error==1){
 		debug_printf("Handle TCP-Message failed! \n\r");
 	}
+	else if(Error==2){
+		debug_printf("TCP-Connection destroyed! \n\r");
+		TCPConnectionStatus = 0;
+		WLANreconnectToTCPserver();
+	}
+	else if(Error==3){
+		debug_printf("WLAN-Connection destroyed! \n\r");
+		WLANConnectionStatus = 0;
+		WLANreconnectToWLAN();
+	}
 	else{
-		TCPConnectionStatus = 1;
+		//debug_printf("Handled TCP-Message! \n\r");
 		WLANstartTCPlistener();
 	}
 }
