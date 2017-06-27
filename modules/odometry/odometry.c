@@ -38,6 +38,14 @@ odo_status odometry_getStatus(void){
 	return currentStatus;
 }
 
+void odometry_setStatus(float x, float y, float theta){
+	//TODO Disable interrupts?!
+	currentStatus.position.posX = x;
+	currentStatus.position.posY = y;
+	currentStatus.theta = theta;
+	oldStatus = currentStatus;
+}
+
 /*
  * Private functions
  */

@@ -7,7 +7,7 @@ This module uses the SPI1 instance with the following setting. Both sensors use 
 | Pin SCK  | PB3       |
 | Pin MOSI | PB5       |
 | Pin CS left  | PA15      |
-| Pin CS right | n/a      |
+| Pin CS right | PA14      |
 | CLK frequency[kHz] | 314.5     |
 
 ## Usage
