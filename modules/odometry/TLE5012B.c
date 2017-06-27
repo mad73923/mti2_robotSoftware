@@ -63,7 +63,9 @@ void sensor_init(void){
 	sensor_hardwareReset(TLE_LEFT);
 	sensor_disableCRCMonitoring(TLE_LEFT);
 	sensor_setAngleTo0(TLE_LEFT);
-	//TODO init right sensor
+	sensor_hardwareReset(TLE_RIGHT);
+	sensor_disableCRCMonitoring(TLE_RIGHT);
+	sensor_setAngleTo0(TLE_RIGHT);
 }
 
 float sensor_getAngle(TLE5012B_ACT_t side){

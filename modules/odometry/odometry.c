@@ -51,7 +51,7 @@ void odometry_setStatus(float x, float y, float theta){
  */
 
 void updateAllCallback1(void){
-	sensor_getRevolutions_async(TLE_LEFT, &currentStatus.left.revolutions, updateAllCallback2);
+	sensor_getAngle_async(TLE_RIGHT, &currentStatus.right.angle, updateAllCallback2);
 }
 
 void updateAllCallback2(void){
