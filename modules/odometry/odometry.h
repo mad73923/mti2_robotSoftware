@@ -35,5 +35,6 @@ typedef struct{
 void odometry_init(void);
 void odometry_updateStatus_async(void);
 odo_status odometry_getStatus(void);
+void odometry_setStatus(float x, float y, float theta);
 
 #endif /* ODOMETRY_ODOMETRY_H_ */
