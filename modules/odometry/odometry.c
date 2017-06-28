@@ -84,7 +84,7 @@ void updateAllCallback2(void){
 	}else{
 		deltaTheta = oldStatus.right.angle - currentStatus.right.angle;
 	}
-	deltaS = (deltaTheta*M_PI/180.0) * ODO_wheelRadius;
+	deltaS = (-deltaTheta*M_PI/180.0) * ODO_wheelRadius;
 	alpha_rad = deltaS/(ODO_halfAxialLength * 2.0);
 	deltaX = ODO_halfAxialLength - (cos(alpha_rad)*ODO_halfAxialLength);
 	deltaY = sin(alpha_rad)*ODO_halfAxialLength;
