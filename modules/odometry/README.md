@@ -1,13 +1,14 @@
 # Odometry module with 2 Infineon TLE5012B
 
-This module uses the SPI1 instance with the following setting. Both sensors use the same SPI bus. Only the CS pin is different for each side.
+This module uses the SPI2 instance with the following setting. Both sensors use the same SPI bus. Only the CS pin is different for each side.
 
 | Property | Value     |
 | -------- | --------- |
-| Pin SCK  | PB3       |
-| Pin MOSI | PB5       |
-| Pin CS left  | PA15      |
-| Pin CS right | PA14      |
+| SPI instance | SPI2  |
+| Pin SCK  | PB13       |
+| Pin MOSI | PC3       |
+| Pin CS left  | PC2      |
+| Pin CS right | PC4      |
 | CLK frequency[kHz] | 314.5     |
 
 ## Usage
