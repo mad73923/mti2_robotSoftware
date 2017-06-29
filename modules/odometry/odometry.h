@@ -30,7 +30,14 @@ typedef struct{
 
 // all measures in mm
 #define ODO_wheelRadius 32.5
+
+#ifdef ODO_halfAxialLength_69
 #define ODO_halfAxialLength 69.0
+#elif ODO_halfAxialLength_60
+#define ODO_halfAxialLength 60.0
+#else
+#error "Please define axial Length in Compiler Symbols"
+#endif
 
 void odometry_init(void);
 void odometry_updateStatus_async(void);

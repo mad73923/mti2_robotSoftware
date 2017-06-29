@@ -14,3 +14,8 @@ This module uses the SPI2 instance with the following setting. Both sensors use 
 ## Usage
 
 In order to use/init the module correctly, call `odometry_init()`.
+
+## Symbol defines
+
+A Symbol for the axial length of the robot must be defined. For Eclipse it should look like this:
+![screenshot](datasheets/screenshotSymbolEclipse.png)
