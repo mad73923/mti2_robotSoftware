@@ -1,39 +1,25 @@
-Kurz und knackig, da ich heute kein Bock mehr auf Readme hab.
-Hier ist ein Bsp-Programm, um sich Front und Hintersensor-Daten geben zu lassen.
-Natürlich nicht das Auschecken von env_sensor vergessen.
+PINCONFIG
+
+PIN	  |	FUNCTION
+-------------------------------
+PA0	  |	ANALOG_IN_0 (0°-180°)
+PA1	  |	ANALOG_IN_1 (180°-360°)
+PC7	  |	MOTOR_SERVO_PWM_PIN
+
+How to initialize this module
 
 int main(void){
+
 	system_init();
-
-  LED2_GPIO_CLK_ENABLE();
-  LL_GPIO_SetPinMode(LED2_GPIO_PORT, LED2_PIN, LL_GPIO_MODE_OUTPUT);
-  
-  Configure_ADC();
-  Activate_ADC();
-
-  uint32_t iCountShit=0;
-  uint16_t frontShit;
-  uint16_t backShit;
+	debug_init();
+	
+	adc_init();					//Init ADC-Channel on pin PA0 & PA1
+	env_timer_init();			//Init Timer-Interrupt to start ADC-Conversion		
+	servo_timer_init();			//Init Servo-Motor-PWM-Channel 
+	
+	start_env_data_collector();	//Starting Environment Data Collection
 
 	while(1){
-		iCountShit++;
-		if(iCountShit==1000000){
-			if ((LL_ADC_IsEnabled(ADC1) == 1) && (LL_ADC_IsDisableOngoing(ADC1) == 0) && (LL_ADC_REG_IsConversionOngoing(ADC1) == 0))
-			{
-			  LL_ADC_REG_StartConversion(ADC1);
-			}
-			iCountShit=0;
-			frontShit = getFrontSensorValue();
-			backShit = getBackSensorValue();
-		}
-		if(frontShit < 1000){
-			LL_GPIO_SetOutputPin(LED2_GPIO_PORT, LED2_PIN);
-		}else{
-			LL_GPIO_ResetOutputPin(LED2_GPIO_PORT, LED2_PIN);
-		}
+
 	}
 }
-
-
-Eine "scan_environment" - Funktion folgt die Tage. (Also Fusion aus Servo und ADC)
-So könnt ihr erstmal Sensordaten erhalten.
