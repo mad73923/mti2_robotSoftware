@@ -6,8 +6,9 @@ PC11 (UART_RX) -> WLAN TX
 ```
 
 ## How to use
-You have to call use the WLAN-module like in the following code-example
-´´´
+You have to call use the WLAN-module like in the following code-example:
+
+```c
 int main(void){
 	system_init();
 	debug_init();
@@ -17,7 +18,6 @@ int main(void){
 	WLANconnectToTCPserver("10.42.0.143","2323");   //Try to connect to the Server 10.42.0.143 through Port 2323 and start TCP-listener on success
 	while(WLANgetTCPConnectionStatus()!=1){}        //Wait for TCP-connection ready
 	while(1){
-
 	}
 }
-´´´
+```
