@@ -399,7 +399,7 @@ void ESP8255_IPD_SendPosCallback1(char* RxBuffer,uint16_t Length){
 	index += sprintf(&Buffer[index], "%s", "ActPos=");
 	index += sprintf(&Buffer[index], "[%ld,",123);
 	index += sprintf(&Buffer[index], "%ld,",345);
-	index += sprintf(&Buffer[index], "%.1f]",67.8);
+	index += sprintf(&Buffer[index], "%.10f]",1.5705);
 	index = 0;
 	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
 	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
