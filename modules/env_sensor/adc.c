@@ -143,7 +143,7 @@ void ADC_INTERRUPT_HANDLER()
 			servo_set_angle(arrayIterator++);
 			linearizeADCRawData();
 
-			if(arrayIterator==19){
+			if(arrayIterator==PI_OFFSET){
 				arrayIterator = 0;
 				counterDelay = -1;
 			}else if(arrayIterator == 1){

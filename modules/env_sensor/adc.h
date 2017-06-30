@@ -30,7 +30,7 @@
 #define ADC_INTERRUPT						ADC1_2_IRQn
 #define ADC_INTERRUPT_HANDLER()				ADC1_2_IRQHandler()
 #define PORT_CLK_ENABLE						LL_AHB2_GRP1_PERIPH_GPIOA
-#define NR_VALUES 38
+#define NR_VALUES 36
 #define PI_OFFSET 18
 
 /* Struct distValues in mm */
