@@ -13,5 +13,6 @@
 #include "../modules/motor/motor.h"
 
 
+#include "../modules/odometry/odometry.h"
 
 #endif /* MAIN_H_ */
