@@ -7,21 +7,20 @@
 
 #include "main.h"
 
-<<<<<<< HEAD
 
-/*MOTOR-DRIVER-TEST*/
-||||||| merged common ancestors
-=======
-static volatile odo_status stat;
-
->>>>>>> master
 int main(void){
 	system_init();
 
-	odometry_init();
+	//odometry_init();
 	motor_timer_init();
+	motor_setSpeed(MOTORLEFT, 0);
+	motor_setSpeed(MOTORRIGHT, 0);
 
 	while(1){
-		odometry_updateStatus_async();
+		//odometry_updateStatus_async();
+		motor_setSpeed(MOTORLEFT, -500);
+		LL_mDelay(2000);
+		motor_setSpeed(MOTORLEFT, 700);
+		LL_mDelay(2000);
 	}
 }
