@@ -20,7 +20,7 @@ void SPI_waitForClearance(void);
 
 #define TLE_SPI_INST		SPI2
 #define TLE_SPI_IRQN		SPI2_IRQn
-#define TLE_SPI_IRQ_PRIO	5
+#define TLE_SPI_IRQ_PRIO	12
 #define TLE_SPI_CLK_INIT()	LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_SPI2)
 #define TLE_SPI_IRQ_HANDLER	SPI2_IRQHandler
 
