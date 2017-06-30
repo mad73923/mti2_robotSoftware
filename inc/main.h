@@ -10,8 +10,7 @@
 
 #include "../modules/system/system.h"
 #include "../modules/debug/debug.h"
-//#include "../modules/motor/motor.h"
-#include "../modules/env_sensor/env_sensor.h"
+#include "../modules/motor/motor.h"
 
 
 
