@@ -41,7 +41,7 @@ int main(void){
 	while(1){
 
 		motor_setSpeed(MOTORLEFT, 1000);	//In this function you set the speed of the motor by choosing which motor you 
-		want (MOTORLEFT, MOTORRIGHT) and the speed you want to have (0-1999)
+		                    want (MOTORLEFT, MOTORRIGHT) and the speed you want to have (0-1999)
 
 		//do other stuff
 
