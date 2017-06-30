@@ -59,6 +59,8 @@ void ESP8255_IPD_SendPosCallback1(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SendPosCallback2(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SendDistancesCallback1(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SendDistancesCallback2(char* RxBuffer,uint16_t Length);
+void ESP8255_IPD_SetThrottleCallback1(char* RxBuffer,uint16_t Length);
+void ESP8255_IPD_SetThrottleCallback2(char* RxBuffer,uint16_t Length);
 
 
 void mutex_lock(void);
@@ -248,18 +250,24 @@ void ESP8266ExpectSendOkCallback(char* buffer, uint16_t length){
 }
 
 void ESP8266ExpectIPDCallback(char* buffer, uint16_t length){
-	if(strstr(buffer,"+IPD,")){
+	if(strncmp(buffer,"+IPD,",5)==0){
 		ESP8266_IPD_ReceivedCallback=0;
-		if(strstr(buffer,"GetUID?")){
+		if(strncmp(buffer,"+IPD,8:GetUID?",14)==0){
 			ESP8266_IPD_ReceivedCallback = ESP8255_IPD_SendUIDCallback1;
+			UARTclearBuffer();
 		}
-		else if(strstr(buffer,"GetPos?")){
+		else if(strncmp(buffer,"+IPD,8:GetPos?",14)==0){
 			ESP8266_IPD_ReceivedCallback = ESP8255_IPD_SendPosCallback1;
+			UARTclearBuffer();
 		}
-		else if(strstr(buffer,"GetDistances?")){
+		else if(strncmp(buffer,"+IPD,14:GetDistances?",21)==0){
 			ESP8266_IPD_ReceivedCallback = ESP8255_IPD_SendDistancesCallback1;
+			UARTclearBuffer();
 		}
-		UARTclearBuffer();
+		else if(strstr(buffer,":SetThrottle![")){
+			ESP8266_IPD_ReceivedCallback = ESP8255_IPD_SetThrottleCallback1;
+		}
+
 		if(ESP8266_IPD_ReceivedCallback!=0){
 			ESP8266_IPD_ReceivedCallback(buffer, length);
 			ESP8266_IPD_ReceivedCallback=0;
@@ -426,6 +434,37 @@ void ESP8255_IPD_SendDistancesCallback1(char* RxBuffer,uint16_t Length){
 }
 
 void ESP8255_IPD_SendDistancesCallback2(char* RxBuffer,uint16_t Length){
+	UARTclearBuffer();
+	UARTStartTransfersCB(Buffer,ESP8266ExpectSendOkCallback);
+}
+
+void ESP8255_IPD_SetThrottleCallback1(char* RxBuffer,uint16_t Length){
+	char strthrottle_l [5];
+	char strthrottle_r [5];
+	int32_t throttle_l;
+	int32_t throttle_r;
+	sscanf(RxBuffer,"%*[^[]%*c%[^,],%[^]]",strthrottle_l,strthrottle_r);
+	sscanf(strthrottle_l,"%d",&throttle_l);
+	sscanf(strthrottle_r,"%d",&throttle_r);
+	//debug_printf("%d %d\n",throttle_l, throttle_r);
+	mutex_unlock();
+	UARTclearBuffer();
+	void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
+	if(esp8266readyCallback!=0){
+		esp8266readyCallback = 0;
+		esp8266readyCallbacktemp(0);
+
+	}
+	uint32_t index = 0;
+	index += sprintf(&Buffer[index], "%s%d,%d]", "SetThrottle=[", throttle_l, throttle_r);
+	index = 0;
+	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
+	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
+	UARTclearBuffer();
+	UARTsetStartIndicatorCallback(ESP8255_IPD_SetThrottleCallback2);
+	UARTStartTransfersCB(Buffer2,0);	//because of listen to >
+}
+void ESP8255_IPD_SetThrottleCallback2(char* RxBuffer,uint16_t Length){
 	UARTclearBuffer();
 	UARTStartTransfersCB(Buffer,ESP8266ExpectSendOkCallback);
 }
