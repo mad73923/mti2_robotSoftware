@@ -7,20 +7,25 @@
 
 #include "main.h"
 
-
 int main(void){
 	system_init();
-
-	//odometry_init();
+	debug_init();
+	WLANinit();
+	odometry_init();
 	motor_timer_init();
 	motor_setSpeed(MOTORLEFT, 0);
 	motor_setSpeed(MOTORRIGHT, 0);
 
+	WLANconnectToAp("RobotStation","StationPassword","10.42.0.10");
+	while(WLANgetWLANConnectionStatus()!=1){
+
+	}
+	WLANconnectToTCPserver("10.42.0.143","2323");
+	while(WLANgetTCPConnectionStatus()!=1){
+
+	}
 	while(1){
-		//odometry_updateStatus_async();
-		motor_setSpeed(MOTORLEFT, -500);
-		LL_mDelay(2000);
-		motor_setSpeed(MOTORLEFT, 700);
-		LL_mDelay(2000);
+		odometry_updateStatus_async();
+
 	}
 }
