@@ -1,9 +1,3 @@
-# smartRobot
-
-This project was held in summer 2017 at the Beuth University of Applied Science. The project members (Felix Danneberg, Thomas Klett and Matthias Weis) worked on a smart mobile Robot.
-
-The control base is a ST Microelectronics NUCLEO-L476RG. For communication, a ESP8266 WiFi chip is used.
-
 # Readme Motor-Module
 ## Pinout
 ```
@@ -46,9 +40,8 @@ int main(void){
 
 	while(1){
 
-		motor_setSpeed(MOTORLEFT, 1000);	//In this function you set the speed of the motor by choosing 
-											  which motor you want (MOTORLEFT, MOTORRIGHT) and the speed 
-											  you want to have (0-1999)
+		motor_setSpeed(MOTORLEFT, 1000);	//In this function you set the speed of the motor by choosing which motor you 
+		                                    want (MOTORLEFT, MOTORRIGHT) and the speed you want to have (0-1999)
 
 		//do other stuff
 
