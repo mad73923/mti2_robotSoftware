@@ -322,7 +322,9 @@ void ESP8266connectToApCallback2(char* RxBuffer,uint16_t Length){
 }
 
 void ESP8266connectToApCallback3(char* RxBuffer,uint16_t Length){
-	ESP8266_OK_Received = ESP8266connectToApCallback4;
+	// skipped callback 4 for auto IP
+	//ESP8266_OK_Received = ESP8266connectToApCallback4;
+	ESP8266_OK_Received = ESP8266connectToApCallback5;
 	strcpy(Buffer,"AT+CWJAP_CUR=\"");
 	strcat(Buffer,SSID_loc);
 	strcat(Buffer,"\",\"");
@@ -396,10 +398,11 @@ void ESP8255_IPD_SendUIDCallback2(char* RxBuffer,uint16_t Length){
 
 void ESP8255_IPD_SendPosCallback1(char* RxBuffer,uint16_t Length){
 	uint32_t index = 0;
+	odo_status stat = odometry_getStatus();
 	index += sprintf(&Buffer[index], "%s", "ActPos=");
-	index += sprintf(&Buffer[index], "[%ld,",123);
-	index += sprintf(&Buffer[index], "%ld,",345);
-	index += sprintf(&Buffer[index], "%.10f]",1.5705);
+	index += sprintf(&Buffer[index], "[%.1f,",stat.position.posX);
+	index += sprintf(&Buffer[index], "%.1f,",stat.position.posY);
+	index += sprintf(&Buffer[index], "%.10f]",stat.theta);
 	index = 0;
 	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
 	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
@@ -447,6 +450,10 @@ void ESP8255_IPD_SetThrottleCallback1(char* RxBuffer,uint16_t Length){
 	sscanf(strthrottle_l,"%d",&throttle_l);
 	sscanf(strthrottle_r,"%d",&throttle_r);
 	//debug_printf("%d %d\n",throttle_l, throttle_r);
+
+	throttle_l = motor_setSpeed(MOTORLEFT, throttle_l);
+	throttle_r = motor_setSpeed(MOTORRIGHT, throttle_r);
+
 	mutex_unlock();
 	UARTclearBuffer();
 	void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;

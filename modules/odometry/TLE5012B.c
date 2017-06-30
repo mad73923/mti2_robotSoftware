@@ -28,11 +28,12 @@ float* asyncGetSpeed;
 
 void CS_init(void);
 void CS_activateLeft(void);
+void CS_activateRight(void);
 void CS_resetAll(void);
 void CS_activateSide(TLE5012B_ACT_t side);
 
-void mutex_lock(void);
-void mutex_unlock(void);
+void TLE_mutex_lock(void);
+void TLE_mutex_unlock(void);
 
 uint16_t sensor_readRegister(TLE5012B_REG_t reg, TLE5012B_ACT_t side);
 void sensor_readRegister_async(TLE5012B_REG_t reg, TLE5012B_ACT_t side, void (*callback)(uint16_t));
@@ -58,7 +59,7 @@ void sensor_init(void){
 	SPI_init();
 	CS_init();
 
-	mutex_unlock();
+	TLE_mutex_unlock();
 
 	sensor_hardwareReset(TLE_LEFT);
 	sensor_disableCRCMonitoring(TLE_LEFT);
@@ -74,7 +75,7 @@ float sensor_getAngle(TLE5012B_ACT_t side){
 }
 
 void sensor_getAngle_async(TLE5012B_ACT_t side, float* angle, void (*callback)){
-	mutex_lock();
+	TLE_mutex_lock();
 	asyncGetAngle = angle;
 	module_done_callback = callback;
 	sensor_readRegister_async(AVAL, side, sensor_getAngle_async_callback);
@@ -86,14 +87,14 @@ int16_t sensor_getRevolutions(TLE5012B_ACT_t side){
 }
 
 void sensor_getRevolutions_async(TLE5012B_ACT_t side, int16_t* revos, void (*callback)){
-	mutex_lock();
+	TLE_mutex_lock();
 	asyncGetRevos = revos;
 	module_done_callback = callback;
 	sensor_readRegister_async(AREV, side, sensor_getRevos_async_callback);
 }
 
 void sensor_getSpeed_async(TLE5012B_ACT_t side, float* speed, void (*callback)){
-	mutex_lock();
+	TLE_mutex_lock();
 	asyncGetSpeed = speed;
 	module_done_callback = callback;
 	sensor_readRegister_async(ASPD, side, sensor_getSpeed_async_callback);
@@ -129,12 +130,12 @@ void sensor_setAngleTo0(TLE5012B_ACT_t side){
  * Private functions
  */
 
-void mutex_lock(void){
+void TLE_mutex_lock(void){
 	while(ressourceBusy);
 	ressourceBusy = 1;
 }
 
-void mutex_unlock(void){
+void TLE_mutex_unlock(void){
 	ressourceBusy = 0;
 }
 
@@ -177,7 +178,7 @@ void readRegister_async_done(void){
 		readRegister_async_callback(readRegister_async_RXBuffer[0]);
 		readRegister_async_callback = 0;
 	}
-	mutex_unlock();
+	TLE_mutex_unlock();
 	if(module_done_callback != 0){
 		void (*temp_module_done)(void) = module_done_callback;
 		module_done_callback = 0;
