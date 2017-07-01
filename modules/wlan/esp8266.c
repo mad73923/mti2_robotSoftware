@@ -62,6 +62,9 @@ void ESP8255_IPD_SendDistancesCallback2(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SetThrottleCallback1(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SetThrottleCallback2(char* RxBuffer,uint16_t Length);
 
+void ESP8266_IPD_SetHornCallback1(char* RxBuffer, uint16_t Length);
+void ESP8266_IPD_SetHornCallback2(char* RxBuffer,uint16_t Length);
+
 
 void mutex_lock(void);
 void mutex_unlock(void);
@@ -266,6 +269,9 @@ void ESP8266ExpectIPDCallback(char* buffer, uint16_t length){
 		}
 		else if(strstr(buffer,":SetThrottle![")){
 			ESP8266_IPD_ReceivedCallback = ESP8255_IPD_SetThrottleCallback1;
+		}
+		else if(strstr(buffer, ":SetHorn![")){
+			ESP8266_IPD_ReceivedCallback = ESP8266_IPD_SetHornCallback1;
 		}
 
 		if(ESP8266_IPD_ReceivedCallback!=0){
@@ -472,6 +478,34 @@ void ESP8255_IPD_SetThrottleCallback1(char* RxBuffer,uint16_t Length){
 	UARTStartTransfersCB(Buffer2,0);	//because of listen to >
 }
 void ESP8255_IPD_SetThrottleCallback2(char* RxBuffer,uint16_t Length){
+	UARTclearBuffer();
+	UARTStartTransfersCB(Buffer,ESP8266ExpectSendOkCallback);
+}
+
+void ESP8266_IPD_SetHornCallback1(char* RxBuffer,uint16_t Length){
+	uint8_t horn;
+	sscanf(RxBuffer,"+IPD,%*d:SetHorn![%d]",&horn);
+
+	horn_enable(horn);
+
+	mutex_unlock();
+	UARTclearBuffer();
+	void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
+	if(esp8266readyCallback!=0){
+		esp8266readyCallback = 0;
+		esp8266readyCallbacktemp(0);
+
+	}
+	uint32_t index = 0;
+	index += sprintf(&Buffer[index], "%s", "SetHorn=OK");
+	index = 0;
+	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
+	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
+	UARTclearBuffer();
+	UARTsetStartIndicatorCallback(ESP8266_IPD_SetHornCallback2);
+	UARTStartTransfersCB(Buffer2,0);	//because of listen to >
+}
+void ESP8266_IPD_SetHornCallback2(char* RxBuffer,uint16_t Length){
 	UARTclearBuffer();
 	UARTStartTransfersCB(Buffer,ESP8266ExpectSendOkCallback);
 }
