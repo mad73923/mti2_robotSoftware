@@ -13,8 +13,6 @@ int main(void){
 	WLANinit();
 	odometry_init();
 	motor_timer_init();
-	motor_setSpeed(MOTORLEFT, 0);
-	motor_setSpeed(MOTORRIGHT, 0);
 
 	WLANconnectToAp("RobotStation","StationPassword","10.42.0.10");
 	while(WLANgetWLANConnectionStatus()!=1){
