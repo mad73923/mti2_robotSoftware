@@ -39,7 +39,6 @@ void (*ESP8266_SendOk_Received)(char*, uint16_t);
 void ESP8266ExpectReadyCallback(char* buffer, uint16_t length);
 void ESP8266ExpectOKCallback(char* buffer, uint16_t length);
 void ESP8266ExpectIPDCallback(char* buffer, uint16_t length);
-void ESP8266ExpectStartIndicatorCallback(char* buffer, uint16_t length);
 void ESP8266ExpectSendOkCallback(char* buffer, uint16_t length);
 void ESP8266ExpectWIFI_CONNECTEDCallback(char* buffer, uint16_t length);
 
@@ -52,20 +51,16 @@ void ESP8266connectToApCallback5(char* Buffer,uint16_t Length);
 void ESP8266connectToTCPserverCallback1(char* Buffer, uint16_t Length);
 void ESP8266connectToTCPserverCallback2(char* RxBuffer,uint16_t Length);
 
+void ESP8266_IPD_FinalCallback(char* RxBuffer, uint16_t Length);
 void ESP8266_IPD_Callback1(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SendUIDCallback1(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SendUIDCallback2(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SendPosCallback1(char* RxBuffer,uint16_t Length);
-void ESP8255_IPD_SendPosCallback2(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SendDistancesCallback1(char* RxBuffer,uint16_t Length);
-void ESP8255_IPD_SendDistancesCallback2(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SetThrottleCallback1(char* RxBuffer,uint16_t Length);
-void ESP8255_IPD_SetThrottleCallback2(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SetPositionCallback1(char* RxBuffer,uint16_t Length);
-void ESP8255_IPD_SetPositionCallback2(char* RxBuffer,uint16_t Length);
 
 void ESP8266_IPD_SetHornCallback1(char* RxBuffer, uint16_t Length);
-void ESP8266_IPD_SetHornCallback2(char* RxBuffer,uint16_t Length);
 
 
 void mutex_lock(void);
@@ -418,11 +413,11 @@ void ESP8255_IPD_SendPosCallback1(char* RxBuffer,uint16_t Length){
 	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
 	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
 	UARTclearBuffer();
-	UARTsetStartIndicatorCallback(ESP8255_IPD_SendPosCallback2);
+	UARTsetStartIndicatorCallback(ESP8266_IPD_FinalCallback);
 	UARTStartTransfersCB(Buffer2,0);	//because of listen to >
 }
 
-void ESP8255_IPD_SendPosCallback2(char* RxBuffer,uint16_t Length){
+void ESP8266_IPD_FinalCallback(char* RxBuffer, uint16_t Length){
 	UARTclearBuffer();
 	UARTStartTransfersCB(Buffer,ESP8266ExpectSendOkCallback);
 }
@@ -443,13 +438,8 @@ void ESP8255_IPD_SendDistancesCallback1(char* RxBuffer,uint16_t Length){
 	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
 	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
 	UARTclearBuffer();
-	UARTsetStartIndicatorCallback(ESP8255_IPD_SendDistancesCallback2);
+	UARTsetStartIndicatorCallback(ESP8266_IPD_FinalCallback);
 	UARTStartTransfersCB(Buffer2,0);	//because of listen to >
-}
-
-void ESP8255_IPD_SendDistancesCallback2(char* RxBuffer,uint16_t Length){
-	UARTclearBuffer();
-	UARTStartTransfersCB(Buffer,ESP8266ExpectSendOkCallback);
 }
 
 void ESP8255_IPD_SetThrottleCallback1(char* RxBuffer,uint16_t Length){
@@ -479,12 +469,8 @@ void ESP8255_IPD_SetThrottleCallback1(char* RxBuffer,uint16_t Length){
 	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
 	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
 	UARTclearBuffer();
-	UARTsetStartIndicatorCallback(ESP8255_IPD_SetThrottleCallback2);
+	UARTsetStartIndicatorCallback(ESP8266_IPD_FinalCallback);
 	UARTStartTransfersCB(Buffer2,0);	//because of listen to >
-}
-void ESP8255_IPD_SetThrottleCallback2(char* RxBuffer,uint16_t Length){
-	UARTclearBuffer();
-	UARTStartTransfersCB(Buffer,ESP8266ExpectSendOkCallback);
 }
 
 void ESP8266_IPD_SetHornCallback1(char* RxBuffer,uint16_t Length){
@@ -507,12 +493,8 @@ void ESP8266_IPD_SetHornCallback1(char* RxBuffer,uint16_t Length){
 	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
 	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
 	UARTclearBuffer();
-	UARTsetStartIndicatorCallback(ESP8266_IPD_SetHornCallback2);
+	UARTsetStartIndicatorCallback(ESP8266_IPD_FinalCallback);
 	UARTStartTransfersCB(Buffer2,0);	//because of listen to >
-}
-void ESP8266_IPD_SetHornCallback2(char* RxBuffer,uint16_t Length){
-	UARTclearBuffer();
-	UARTStartTransfersCB(Buffer,ESP8266ExpectSendOkCallback);
 }
 
 void ESP8255_IPD_SetPositionCallback1(char* RxBuffer,uint16_t Length){
@@ -538,11 +520,6 @@ void ESP8255_IPD_SetPositionCallback1(char* RxBuffer,uint16_t Length){
 	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
 	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
 	UARTclearBuffer();
-	UARTsetStartIndicatorCallback(ESP8255_IPD_SetPositionCallback2);
+	UARTsetStartIndicatorCallback(ESP8266_IPD_FinalCallback);
 	UARTStartTransfersCB(Buffer2,0);	//because of listen to >
-}
-
-void ESP8255_IPD_SetPositionCallback2(char* RxBuffer,uint16_t Length){
-	UARTclearBuffer();
-	UARTStartTransfersCB(Buffer,ESP8266ExpectSendOkCallback);
 }
