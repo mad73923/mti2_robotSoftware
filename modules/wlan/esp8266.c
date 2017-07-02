@@ -520,7 +520,7 @@ void ESP8255_IPD_SetPositionCallback1(char* RxBuffer,uint16_t Length){
 	float posY;
 	float theta;
 
-	sscanf(RxBuffer,"+IPD,%*d:SetPosition![%f][%f][%f]",&posX,&posY,&theta);
+	sscanf(RxBuffer,"+IPD,%*d:SetPosition![%f,%f,%f]",&posX,&posY,&theta);
 
 	odometry_setStatus(posX, posY, theta);
 
