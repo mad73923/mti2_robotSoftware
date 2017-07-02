@@ -443,13 +443,9 @@ void ESP8255_IPD_SendDistancesCallback1(char* RxBuffer,uint16_t Length){
 }
 
 void ESP8255_IPD_SetThrottleCallback1(char* RxBuffer,uint16_t Length){
-	char strthrottle_l [5];
-	char strthrottle_r [5];
 	int32_t throttle_l;
 	int32_t throttle_r;
-	sscanf(RxBuffer,"%*[^[]%*c%[^,],%[^]]",strthrottle_l,strthrottle_r);
-	sscanf(strthrottle_l,"%d",&throttle_l);
-	sscanf(strthrottle_r,"%d",&throttle_r);
+	sscanf(RxBuffer,"+IPD,%*d:SetThrottle![%d,%d]",&throttle_l,&throttle_r);
 	//debug_printf("%d %d\n",throttle_l, throttle_r);
 
 	throttle_l = motor_setSpeed(MOTORLEFT, throttle_l);
@@ -464,7 +460,7 @@ void ESP8255_IPD_SetThrottleCallback1(char* RxBuffer,uint16_t Length){
 
 	}
 	uint32_t index = 0;
-	index += sprintf(&Buffer[index], "%s%d,%d]", "SetThrottle=[", throttle_l, throttle_r);
+	index += sprintf(&Buffer[index], "SetThrottle=[%d,%d]", throttle_l, throttle_r);
 	index = 0;
 	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
 	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
