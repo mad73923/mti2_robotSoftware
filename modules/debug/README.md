@@ -9,11 +9,32 @@ So far, there's only one buffer available. The first message can be send asynchr
 
 Maximum message length: DEBUG_BUFFERSIZE
 
+## Usage
+### void debug_init(void)
+This function initializes the debug module and must be called once before using the module functions.
+
+### void debug_printf(const char* format, ...)
+**Calling this function inside an interrupt service routine may cause problems!!**
+The string specified in format will be printed to the UART. Variable number of parameters is accepted.
+```
+debug_printf("Test %d %s", someInteger, someString);
+```
+
+### void debug_led_on(void);
+Turns the debug LED on.
+
+### void debug_led_off(void);
+Turns the debug LED off.
+
+### void debug_led_toggle(void);
+Toggles the debug LED.
+
 ## GPIO Configuration
 
 | Pin  |   Function    |
 | ---- | ------------- |
 | PA02 | UART TX       |
+| PA05 | LED           |
 
 ## UART Configuration
 
@@ -32,5 +53,5 @@ Maximum message length: DEBUG_BUFFERSIZE
 | Instance | DMA1      |
 | Channel  | 7         |
 | Request  | 2         |
-| IRQ Priority | 15    |
+| IRQ Priority | 1    |
 

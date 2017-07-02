@@ -13,6 +13,7 @@
 void configure_gpio(void);
 int32_t motor_setSpeed(char cMotor, int32_t iSpeed);
 void motor_stop(char cMotor);
+void horn_enable(uint8_t enable);
 
 //
 #endif /* MOTOR_MOTOR_H_ */

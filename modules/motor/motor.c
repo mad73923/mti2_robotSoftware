@@ -56,3 +56,11 @@ int32_t motor_setSpeed(char cMotor, int32_t iSpeed){
 void motor_stop(char cMotor){
 	set_cc(cMotor,0);
 }
+
+void horn_enable(uint8_t enable){
+	if(enable){
+		LL_GPIO_SetOutputPin(PIEP_PORT, PIEP_PIN);
+	}else{
+		LL_GPIO_ResetOutputPin(PIEP_PORT, PIEP_PIN);
+	}
+}
