@@ -39,6 +39,7 @@ int32_t motor_setSpeed(char cMotor, int32_t iSpeed){
 	if(iSpeed<0){
 		set_dir(cMotor,BACKWARD);
 		cMem = 1;
+		iSpeed*=-1;
 	}else{
 		set_dir(cMotor,FORWARD);
 		cMem = 0;
@@ -55,7 +56,7 @@ int32_t motor_setSpeed(char cMotor, int32_t iSpeed){
 		if(cMem == 0){
 			return set_cc(cMotor, iSpeed);
 		}else{
-			return -(set_cc(cMotor,(-1)*iSpeed));
+			return -(set_cc(cMotor,iSpeed));
 		}
 	}
 }
