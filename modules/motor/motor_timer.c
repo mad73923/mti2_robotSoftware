@@ -63,8 +63,8 @@ void motor_timer_init(void){
 	LL_TIM_OC_SetMode(MOTORRIGHT_TIMER, MOTORRIGHT_TIMER_PWM_CHANNEL, LL_TIM_OCMODE_PWM1);
 
 	/* Set compare value to half of the counter period (50% duty cycle ) */
-	LL_TIM_OC_SetCompareCH1(MOTORLEFT_TIMER, (LL_TIM_GetAutoReload(MOTORLEFT_TIMER)/2));
-	LL_TIM_OC_SetCompareCH2(MOTORRIGHT_TIMER, (LL_TIM_GetAutoReload(MOTORRIGHT_TIMER)/2));
+	LL_TIM_OC_SetCompareCH1(MOTORLEFT_TIMER, 0);
+	LL_TIM_OC_SetCompareCH2(MOTORRIGHT_TIMER, 0);
 
 	/* Enable TIM2_CCR1 register preload. Read/Write operations access the      */
 	/* preload register. TIM2_CCR1 preload value is loaded in the active        */
