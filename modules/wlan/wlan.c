@@ -17,8 +17,11 @@ uint8_t TCPConnectionStatus = 0;
 char TCP_IP[20];
 char TCP_Port[5];
 
+uint8_t lastIPByte;
+
 void WLANinit(){
 	ESP8266init();
+	lastIPByte = 0;
 }
 
 
@@ -28,14 +31,16 @@ void WLANconnectToAp(const char* SSID,const char* PW,const char* IP){
 }
 
 void WLANconnectToTCPserver(const char* IP, const char* Port){
-	strcpy(TCP_IP,IP);
+	sprintf(TCP_IP, "10.42.0.%u", lastIPByte);
 	strcpy(TCP_Port,Port);
 	wlanreadyCallback = WlanConnectedToTCPcallback;
-	ESP8266connectToTCPserver(IP, Port,wlanreadyCallback);
+	ESP8266connectToTCPserver(TCP_IP, TCP_Port,wlanreadyCallback);
 }
 
 void WLANreconnectToTCPserver(){
 	wlanreadyCallback = WlanConnectedToTCPcallback;
+	lastIPByte++;
+	sprintf(TCP_IP, "10.42.0.%u", lastIPByte);
 	ESP8266connectToTCPserver(TCP_IP, TCP_Port,wlanreadyCallback);
 }
 
