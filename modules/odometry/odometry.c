@@ -29,6 +29,7 @@ void updateAllCallback2(void);
 void odometry_init(void){
 	sensor_init();
 	odometry_init_timer();
+	odometry_autoupdate_start();
 	currentStatus.theta = M_PI_2;
 }
 
@@ -48,6 +49,15 @@ void odometry_setStatus(float x, float y, float theta){
 	oldStatus = currentStatus;
 }
 
+void odometry_autoupdate_start(void){
+	LL_TIM_SetCounter(ODO_TIM_INST, 0);
+	LL_TIM_EnableCounter(ODO_TIM_INST);
+}
+
+void odometry_autoupdate_stop(void){
+	LL_TIM_DisableCounter(ODO_TIM_INST);
+}
+
 /*
  * Private functions
  */
@@ -61,8 +71,6 @@ void odometry_init_timer(void){
 	LL_TIM_EnableIT_UPDATE(ODO_TIM_INST);
 	NVIC_SetPriority(ODO_TIM_IRQN, ODO_TIM_PRIO);
 	NVIC_EnableIRQ(ODO_TIM_IRQN);
-
-	LL_TIM_EnableCounter(ODO_TIM_INST);
 }
 
 void updateAllCallback1(void){
@@ -128,4 +136,5 @@ void updateAllCallback2(void){
 
 void ODO_TIM_IRQ_HANDLER(){
 	LL_TIM_ClearFlag_UPDATE(ODO_TIM_INST);
+	odometry_updateStatus_async();
 }

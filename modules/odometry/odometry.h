@@ -46,4 +46,7 @@ void odometry_updateStatus_async(void);
 odo_status odometry_getStatus(void);
 void odometry_setStatus(float x, float y, float theta);
 
+void odometry_autoupdate_start(void);
+void odometry_autoupdate_stop(void);
+
 #endif /* ODOMETRY_ODOMETRY_H_ */
