@@ -23,7 +23,7 @@ void uart_waitTransmissionComplete(void);
 #define DEBUG_UART_TX_DMA_CH		LL_DMA_CHANNEL_7
 #define DEBUG_UART_TX_DMA_REQ		LL_DMA_REQUEST_2
 #define DEBUG_UART_TX_DMA_IRQn		DMA1_Channel7_IRQn
-#define DEBUG_UART_TX_DMA_PRIO		5
+#define DEBUG_UART_TX_DMA_PRIO		11
 #define DEBUG_UART_TX_DMA_HANDLER()	DMA1_Channel7_IRQHandler()
 
 #define DEBUG_UART_INST				USART2
