@@ -23,7 +23,7 @@ void uart_waitTransmissionComplete(void);
 #define DEBUG_UART_TX_DMA_CH		LL_DMA_CHANNEL_7
 #define DEBUG_UART_TX_DMA_REQ		LL_DMA_REQUEST_2
 #define DEBUG_UART_TX_DMA_IRQn		DMA1_Channel7_IRQn
-#define DEBUG_UART_TX_DMA_PRIO		0
+#define DEBUG_UART_TX_DMA_PRIO		5
 #define DEBUG_UART_TX_DMA_HANDLER()	DMA1_Channel7_IRQHandler()
 
 #define DEBUG_UART_INST				USART2
@@ -35,5 +35,9 @@ void uart_waitTransmissionComplete(void);
 #define DEBUG_UART_GPIO_CLK_INIT()	LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOA)
 #define DEBUG_UART_TX_AF			LL_GPIO_AF_7
 #define DEBUG_UART_SET_AF			LL_GPIO_SetAFPin_0_7
+
+#define DEBUG_LED_GPIO_PORT			GPIOA
+#define DEBUG_LED_GPIO_PIN			LL_GPIO_PIN_5
+#define DEBUG_LED_GPIO_CLK_INIT()	LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOA)
 
 #endif /* DEBUG_DEBUG_HARDWARE_H_ */
