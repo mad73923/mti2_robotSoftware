@@ -33,7 +33,7 @@ typedef struct{
 #define ODO_TIM_CLK_INIT() LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM6)
 #define ODO_TIM_INST TIM6
 #define ODO_TIM_IRQN TIM6_DAC_IRQn
-#define ODO_TIM_PRIO 10
+#define ODO_TIM_PRIO 12
 #define ODO_TIM_FREQ 50
 #define ODO_TIM_IRQ_HANDLER() TIM6_DAC_IRQHandler()
 
