@@ -169,6 +169,23 @@ void linearizeADCRawData()
 {
 		distances_data[arrayIterator-1]=(uint16_t)(linFactor * pow((analogRawData[0]/1241.21),a));
 		distances_data[arrayIterator-1+PI_OFFSET]=(uint16_t)(linFactor * pow((analogRawData[1]/1241.21),a));
+		setMutexShadow();
+		if(arrayIterator==17){
+			for(int i = 0; i < NR_VALUES; i++){
+				distances_shadow[i]=distances_data[i];
+			}
+		}
+		resetMutexShadow();
+
+}
+
+void setMutexShadow(){
+	while(mutexShadow){};
+	mutexShadow = 1;
+}
+
+void resetMutexShadow(){
+	mutexShadow = 0;
 }
 /**
   * @brief  This function maps the distance front and back values
