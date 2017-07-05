@@ -231,6 +231,10 @@ uint16_t* getDistancesArray()
 	return distances_data;
 }
 
+uint16_t* getDistancesArrayShadow()
+{
+	return distances_shadow;
+}
 /**
   * @brief  This function returns the current index of the written distance-sensor
   * 		array position.

@@ -45,7 +45,7 @@ void    adc_init(void);
 uint16_t getFrontSensorValue();
 uint16_t getBackSensorValue();
 uint16_t * getDistancesArray();
-uint16_t* getDistancesArrayShadow();
+uint16_t * getDistancesArrayShadow();
 char getCurrentDistanceArrayIndex();
 void linearizeADCRawData();
 void setMutexShadow();
