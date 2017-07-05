@@ -32,7 +32,7 @@
 #define PORT_CLK_ENABLE						LL_AHB2_GRP1_PERIPH_GPIOA
 #define NR_VALUES 36
 #define PI_OFFSET 18
-
+#define MAX_DIST  900
 /* Struct distValues in mm */
 struct distValues {
 	uint16_t front;

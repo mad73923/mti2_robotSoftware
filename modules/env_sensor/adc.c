@@ -13,7 +13,8 @@ __IO int8_t counterDelay = 0;
 __IO const float	a = -1.3838;
 __IO const float	b = 2.8372;
 __IO const float linFactor = 170.6791;
-
+__IO uint16_t front = 0;
+__IO uint16_t back = 0;
 /**
   * @brief  This function configures the ADC1 for PORT A PIN 0 (FRONTSENSOR) & 1 (BACKSENSOR)
   * 		A Interrupt is set and both ADC-Channels are converted
@@ -167,15 +168,26 @@ void ADC_INTERRUPT_HANDLER()
   */
 void linearizeADCRawData()
 {
-		distances_data[arrayIterator-1]=(uint16_t)(linFactor * pow((analogRawData[0]/1241.21),a));
-		distances_data[arrayIterator-1+PI_OFFSET]=(uint16_t)(linFactor * pow((analogRawData[1]/1241.21),a));
-		setMutexShadow();
-		if(arrayIterator==17){
-			for(int i = 0; i < NR_VALUES; i++){
-				distances_shadow[i]=distances_data[i];
-			}
+	front = (uint16_t)(linFactor * pow((analogRawData[0]/1241.21),a));
+	back = (uint16_t)(linFactor * pow((analogRawData[1]/1241.21),a));
+
+	if(front >= MAX_DIST){
+		front = MAX_DIST;
+	}
+	if(back >= MAX_DIST){
+		back = MAX_DIST;
+	}
+
+	distances_data[arrayIterator-1]=front
+	distances_data[arrayIterator-1+PI_OFFSET]=back
+
+	setMutexShadow();
+	if(arrayIterator==17){
+		for(int i = 0; i < NR_VALUES; i++){
+			distances_shadow[i]=distances_data[i];
 		}
-		resetMutexShadow();
+	}
+	resetMutexShadow();
 
 }
 
@@ -229,6 +241,11 @@ uint16_t getBackSensorValue()
 uint16_t* getDistancesArray()
 {
 	return distances_data;
+}
+
+uint16_t* getDistancesArrayShadow()
+{
+	return distances_shadow;
 }
 
 /**
