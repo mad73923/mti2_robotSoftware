@@ -423,15 +423,17 @@ void ESP8266_IPD_FinalCallback(char* RxBuffer, uint16_t Length){
 }
 
 //Beispieldaten
-uint16_t distances[36] = {1,2,3,4,5,4,3,2,1,0,10,20,30,40,50,40,30,20,10,0,100,200,300,400,500,400,300,200,100,0,20,40,60,80,90,100};
-uint16_t numdistances = 36;
 
 void ESP8255_IPD_SendDistancesCallback1(char* RxBuffer,uint16_t Length){
 	uint32_t index = 0;
 	index += sprintf(&Buffer[index], "%s", "ActDistances=[");
-	for(uint16_t i = 0; i<numdistances; i++){
+	setMutexShadow();
+	getDistancesArrayShadow();
+	uint16_t *distances = getDistancesArrayShadow();
+	for(uint16_t i = 0; i<NR_VALUES; i++){
 		index += sprintf(&Buffer[index], "%d,",distances[i]);
 	}
+	resetMutexShadow();
 	index += sprintf(&Buffer[index-1], "]");
 
 	index = 0;

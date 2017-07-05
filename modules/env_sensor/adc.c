@@ -37,7 +37,7 @@ void adc_init(void)
 	LL_GPIO_EnablePinAnalogControl(ADC_PORT, ADC_PIN2);
 
 	/* Configure NVIC to enable ADC1 interruptions */
-	NVIC_SetPriority(ADC_INTERRUPT, 0);
+	NVIC_SetPriority(ADC_INTERRUPT, 14);
 	NVIC_EnableIRQ(ADC_INTERRUPT);
 
 	/* Enable ADC clock (core clock) */
