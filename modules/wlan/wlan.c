@@ -12,8 +12,8 @@ void WlanConnectedToApCallback(uint8_t Error);
 void WlanConnectedToTCPcallback(uint8_t Error);
 void WlanHandledTCPmessageCallback(uint8_t Error);
 
-uint8_t WLANConnectionStatus = 0;
-uint8_t TCPConnectionStatus = 0;
+volatile uint8_t WLANConnectionStatus = 0;
+volatile uint8_t TCPConnectionStatus = 0;
 char TCP_IP[20];
 char TCP_Port[5];
 
