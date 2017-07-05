@@ -9,6 +9,7 @@
 #define ODOMETRY_ODOMETRY_H_
 
 #include "TLE5012B.h"
+#include "stm32l4xx_ll_tim.h"
 #include <math.h>
 
 typedef struct{

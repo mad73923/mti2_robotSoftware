@@ -18,6 +18,7 @@ odo_status oldStatus;
  * Private functions prototypes
  */
 
+void odometry_init_timer(void);
 void updateAllCallback1(void);
 void updateAllCallback2(void);
 
@@ -27,6 +28,7 @@ void updateAllCallback2(void);
 
 void odometry_init(void){
 	sensor_init();
+	odometry_init_timer();
 	currentStatus.theta = M_PI_2;
 }
 
@@ -49,6 +51,19 @@ void odometry_setStatus(float x, float y, float theta){
 /*
  * Private functions
  */
+
+void odometry_init_timer(void){
+	LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM6);
+	LL_TIM_SetCounterMode(TIM6, LL_TIM_COUNTERMODE_UP);
+	LL_TIM_SetPrescaler(TIM6, __LL_TIM_CALC_PSC(SystemCoreClock, 1000));
+	LL_TIM_SetAutoReload(TIM6, __LL_TIM_CALC_ARR(SystemCoreClock, LL_TIM_GetPrescaler(TIM6), 1));
+
+	LL_TIM_EnableIT_UPDATE(TIM6);
+	NVIC_SetPriority(TIM6_DAC_IRQn, 10);
+	NVIC_EnableIRQ(TIM6_DAC_IRQn);
+
+	LL_TIM_EnableCounter(TIM6);
+}
 
 void updateAllCallback1(void){
 	sensor_getAngle_async(TLE_RIGHT, &currentStatus.right.angle, updateAllCallback2);
@@ -105,4 +120,12 @@ void updateAllCallback2(void){
 		currentStatus.theta -= 2.0*M_PI;
 	}
 	oldStatus = currentStatus;
+}
+
+/*
+ * Interrupt functions
+ */
+
+void TIM6_DAC_IRQHandler(void){
+	LL_TIM_ClearFlag_UPDATE(TIM6);
 }
