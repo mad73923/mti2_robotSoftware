@@ -53,16 +53,16 @@ void odometry_setStatus(float x, float y, float theta){
  */
 
 void odometry_init_timer(void){
-	LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM6);
-	LL_TIM_SetCounterMode(TIM6, LL_TIM_COUNTERMODE_UP);
-	LL_TIM_SetPrescaler(TIM6, __LL_TIM_CALC_PSC(SystemCoreClock, 1000));
-	LL_TIM_SetAutoReload(TIM6, __LL_TIM_CALC_ARR(SystemCoreClock, LL_TIM_GetPrescaler(TIM6), 1));
+	ODO_TIM_CLK_INIT();
+	LL_TIM_SetCounterMode(ODO_TIM_INST, LL_TIM_COUNTERMODE_UP);
+	LL_TIM_SetPrescaler(ODO_TIM_INST, __LL_TIM_CALC_PSC(SystemCoreClock, 1000));
+	LL_TIM_SetAutoReload(ODO_TIM_INST, __LL_TIM_CALC_ARR(SystemCoreClock, LL_TIM_GetPrescaler(ODO_TIM_INST), ODO_TIM_FREQ));
 
-	LL_TIM_EnableIT_UPDATE(TIM6);
-	NVIC_SetPriority(TIM6_DAC_IRQn, 10);
-	NVIC_EnableIRQ(TIM6_DAC_IRQn);
+	LL_TIM_EnableIT_UPDATE(ODO_TIM_INST);
+	NVIC_SetPriority(ODO_TIM_IRQN, ODO_TIM_PRIO);
+	NVIC_EnableIRQ(ODO_TIM_IRQN);
 
-	LL_TIM_EnableCounter(TIM6);
+	LL_TIM_EnableCounter(ODO_TIM_INST);
 }
 
 void updateAllCallback1(void){
@@ -126,6 +126,6 @@ void updateAllCallback2(void){
  * Interrupt functions
  */
 
-void TIM6_DAC_IRQHandler(void){
-	LL_TIM_ClearFlag_UPDATE(TIM6);
+void ODO_TIM_IRQ_HANDLER(){
+	LL_TIM_ClearFlag_UPDATE(ODO_TIM_INST);
 }
