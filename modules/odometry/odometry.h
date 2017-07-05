@@ -34,7 +34,7 @@ typedef struct{
 #define ODO_TIM_INST TIM6
 #define ODO_TIM_IRQN TIM6_DAC_IRQn
 #define ODO_TIM_PRIO 10
-#define ODO_TIM_FREQ 1
+#define ODO_TIM_FREQ 50
 #define ODO_TIM_IRQ_HANDLER() TIM6_DAC_IRQHandler()
 
 // all measures in mm
