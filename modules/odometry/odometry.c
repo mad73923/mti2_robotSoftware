@@ -88,6 +88,7 @@ void updateAllCallback2(void){
 		deltaTheta = oldStatus.left.angle - currentStatus.left.angle;
 	}
 	float deltaS = (deltaTheta*M_PI/180.0) * ODO_wheelRadius;
+	currentStatus.left.speed = -deltaS*ODO_TIM_FREQ;
 	float alpha_rad = deltaS/(ODO_halfAxialLength * 2.0);
 	float deltaX = -(ODO_halfAxialLength - (cos(alpha_rad)*ODO_halfAxialLength));
 	float deltaY = sin(alpha_rad)*ODO_halfAxialLength;
@@ -108,6 +109,7 @@ void updateAllCallback2(void){
 		deltaTheta = oldStatus.right.angle - currentStatus.right.angle;
 	}
 	deltaS = (-deltaTheta*M_PI/180.0) * ODO_wheelRadius;
+	currentStatus.right.speed = -deltaS*ODO_TIM_FREQ;
 	alpha_rad = deltaS/(ODO_halfAxialLength * 2.0);
 	deltaX = ODO_halfAxialLength - (cos(alpha_rad)*ODO_halfAxialLength);
 	deltaY = sin(alpha_rad)*ODO_halfAxialLength;
@@ -128,6 +130,8 @@ void updateAllCallback2(void){
 		currentStatus.theta -= 2.0*M_PI;
 	}
 	oldStatus = currentStatus;
+
+	PID_trigger();
 }
 
 /*

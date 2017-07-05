@@ -23,6 +23,7 @@ int main(void){
 
 	}
 	while(1){
-
+		odo_status stat = odometry_getStatus();
+		debug_printf("speed: left: %f right: %f\n", stat.left.speed, stat.right.speed);
 	}
 }
