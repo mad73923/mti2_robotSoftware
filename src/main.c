@@ -11,9 +11,6 @@ int main(void){
 	system_init();
 	debug_init();
 	WLANinit();
-	odometry_init();
-	motor_timer_init();
-
 	WLANconnectToAp("RobotStation","StationPassword","10.42.0.10");
 	while(WLANgetWLANConnectionStatus()!=1){
 
@@ -22,6 +19,10 @@ int main(void){
 	while(WLANgetTCPConnectionStatus()!=1){
 
 	}
+	odometry_init();
+	motor_timer_init();
+
+
 	while(1){
 
 	}
