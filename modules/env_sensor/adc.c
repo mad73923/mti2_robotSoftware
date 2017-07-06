@@ -51,6 +51,7 @@ void adc_init(void)
 
 	if ((LL_ADC_IsEnabled(ADC_NR) == 0) || (LL_ADC_REG_IsConversionOngoing(ADC_NR) == 0))
 	{
+
 		/* Set ADC group regular trigger source */
 		LL_ADC_REG_SetTriggerSource(ADC_NR, LL_ADC_REG_TRIG_SOFTWARE);
 
@@ -61,11 +62,11 @@ void adc_init(void)
 		LL_ADC_REG_SetOverrun(ADC_NR, LL_ADC_REG_OVR_DATA_OVERWRITTEN);
 
 		/* Set ADC group regular sequencer length and scan direction */
-		LL_ADC_REG_SetSequencerLength(ADC_NR, LL_ADC_REG_SEQ_SCAN_ENABLE_2RANKS);
+		LL_ADC_REG_SetSequencerLength(ADC_NR, LL_ADC_REG_SEQ_SCAN_DISABLE);
 
 		/* Set ADC group regular sequence: channel on the selected sequence rank. */
 		LL_ADC_REG_SetSequencerRanks(ADC_NR, LL_ADC_REG_RANK_1, ADC_CHANNEL_1);
-		LL_ADC_REG_SetSequencerRanks(ADC_NR, LL_ADC_REG_RANK_2, ADC_CHANNEL_2);
+		//LL_ADC_REG_SetSequencerRanks(ADC_NR, LL_ADC_REG_RANK_2, ADC_CHANNEL_2);
 	}
 
 	if ((LL_ADC_IsEnabled(ADC_NR) == 0) || ((LL_ADC_REG_IsConversionOngoing(ADC_NR) == 0) && (LL_ADC_INJ_IsConversionOngoing(ADC_NR) == 0)))
@@ -134,6 +135,7 @@ void ADC_INTERRUPT_HANDLER()
 	/* With this formula, the internal ADC-value is converted into mm-distance */
 	/* The frontFlag is to differentiate between front and back-sensor-data. */
 	analogRawData[frontFlag] = LL_ADC_REG_ReadConversionData12(ADC_NR);
+
 	frontFlag = !frontFlag;
 
 	 /* To start this function block the corresponding function in env_sensor.c has to be called.*/
@@ -156,6 +158,13 @@ void ADC_INTERRUPT_HANDLER()
 		}
 		counterDelay++;
 
+	}
+	if(frontFlag){
+		LL_ADC_REG_SetSequencerRanks(ADC_NR, LL_ADC_REG_RANK_1, ADC_CHANNEL_2);
+		LL_ADC_REG_StartConversion(ADC_NR);
+	}
+	else{
+		LL_ADC_REG_SetSequencerRanks(ADC_NR, LL_ADC_REG_RANK_1, ADC_CHANNEL_1);
 	}
 
 }

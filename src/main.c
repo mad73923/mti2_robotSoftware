@@ -24,7 +24,7 @@ int main(void){
 	env_timer_init();
 	servo_timer_init();
 	adc_init();
-	start_env_data_collector();
+
 
 
 	while(1){
