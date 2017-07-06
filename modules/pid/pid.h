@@ -26,5 +26,7 @@ typedef struct{
 
 
 void PID_trigger(void);
+void PID_setParameter(int32_t kP, int32_t kI, int32_t kD);
+void PID_setSpeed(int32_t leftSpeed, int32_t rightSpeed);
 
 #endif /* PID_PID_H_ */

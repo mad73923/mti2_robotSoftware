@@ -26,8 +26,16 @@ controlValues right_control;
 
 volatile int32_t q0, q1, q2;
 
+/*
+ * Private functions prototype
+ */
+
 static int32_t calculateControlValue(inputValues* input, controlValues* control);
 void PID_setSpeed(inputValues* input, controlValues* control, int32_t target, uint8_t side);
+
+/*
+ * Public functions
+ */
 
 void PID_trigger(void){
 	odo_status stat = odometry_getStatus();
@@ -36,6 +44,21 @@ void PID_trigger(void){
 	PID_setSpeed(&left_input, &left_control, targetValues.targetValueLeft, MOTORLEFT);
 	PID_setSpeed(&right_input, &right_control, targetValues.targetValueRight, MOTORRIGHT);
 }
+
+void PID_setParameter(int32_t kP, int32_t kI, int32_t kD){
+	Kp = kP;
+	Ki = kI;
+	Kd = kD;
+}
+
+void PID_setSpeed(int32_t leftSpeed, int32_t rightSpeed){
+	targetValues.targetValueLeft = leftSpeed;
+	targetValues.targetValueRight = rightSpeed;
+}
+
+/*
+ * Private functions
+ */
 
 void PID_setSpeed(inputValues* input, controlValues* control, int32_t target, uint8_t side){
 	control->controlValue = calculateControlValue(input, control);
