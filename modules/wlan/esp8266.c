@@ -180,7 +180,7 @@ void ESP8266ExpectWIFI_CONNECTEDCallback(char* buffer, uint16_t length){
 }
 
 void ESP8266ExpectOKCallback(char* buffer, uint16_t length){
-	if(strstr(buffer,"OK")){
+	if(strncmp(buffer,"OK",2)==0){
 	//		debug_printf("ready recieved!\n\r");
 			UARTclearBuffer();
 			ESP8266_OK_Received(buffer, length);
@@ -204,7 +204,7 @@ void ESP8266ExpectOKCallback(char* buffer, uint16_t length){
 		}
 	}
 	else{
-		//UARTclearBuffer();
+		UARTclearBuffer();
 		UARTsetNewLineCallback(ESP8266ExpectOKCallback);
 	}
 }
@@ -319,7 +319,7 @@ void ESP8266ExpectIPDCallback(char* buffer, uint16_t length){
 void ESP8266connectToApCallback1(char* RxBuffer,uint16_t Length){
 	ESP8266_OK_Received = ESP8266connectToApCallback2;
 	UARTclearBuffer();
-	UARTStartTransfersCB("ATE0\r\n",ESP8266ExpectOKCallback);
+	UARTStartTransfersCB("ATE1\r\n",ESP8266ExpectOKCallback);
 }
 
 void ESP8266connectToApCallback2(char* RxBuffer,uint16_t Length){
