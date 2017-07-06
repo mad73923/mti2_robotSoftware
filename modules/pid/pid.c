@@ -26,6 +26,8 @@ controlValues right_control;
 
 volatile int32_t q0, q1, q2;
 
+volatile uint8_t pid_isActive;
+
 /*
  * Private functions prototype
  */
@@ -37,7 +39,18 @@ void PID_setMotor(inputValues* input, controlValues* control, int32_t target, ui
  * Public functions
  */
 
+void PID_enable(void){
+	pid_isActive = 1;
+}
+
+void PID_disable(void){
+	pid_isActive = 0;
+}
+
 void PID_trigger(void){
+	if(!pid_isActive){
+		return;
+	}
 	odo_status stat = odometry_getStatus();
 	left_input.inputValue = targetValues.targetValueLeft - stat.left.speed;
 	right_input.inputValue = targetValues.targetValueRight - stat.right.speed;

@@ -456,6 +456,7 @@ void ESP8255_IPD_SetThrottleCallback1(char* RxBuffer,uint16_t Length){
 	sscanf(RxBuffer,"+IPD,%*d:SetThrottle![%d,%d]",&throttle_l,&throttle_r);
 	//debug_printf("%d %d\n",throttle_l, throttle_r);
 
+	PID_disable();
 	throttle_l = motor_setSpeed(MOTORLEFT, throttle_l);
 	throttle_r = motor_setSpeed(MOTORRIGHT, throttle_r);
 
@@ -561,6 +562,7 @@ void ESP8255_IPD_SetSpeedCallback1(char* RxBuffer,uint16_t Length){
 	sscanf(RxBuffer,"+IPD,%*d:SetSpeed![%d,%d]",&speedLeft,&speedRight);
 
 	PID_setSpeed(speedLeft, speedRight);
+	PID_enable();
 
 	mutex_unlock();
 	UARTclearBuffer();
