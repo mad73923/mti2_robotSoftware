@@ -59,6 +59,8 @@ void ESP8255_IPD_SendPosCallback1(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SendDistancesCallback1(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SetThrottleCallback1(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SetPositionCallback1(char* RxBuffer,uint16_t Length);
+void ESP8255_IPD_SetPIDCallback1(char* RxBuffer,uint16_t Length);
+void ESP8255_IPD_SetSpeedCallback1(char* RxBuffer,uint16_t Length);
 
 void ESP8266_IPD_SetHornCallback1(char* RxBuffer, uint16_t Length);
 
@@ -272,6 +274,12 @@ void ESP8266ExpectIPDCallback(char* buffer, uint16_t length){
 		}
 		else if(strstr(buffer, ":SetPosition![")){
 					ESP8266_IPD_ReceivedCallback = ESP8255_IPD_SetPositionCallback1;
+		}
+		else if(strstr(buffer, ":SetSpeed![")){
+							ESP8266_IPD_ReceivedCallback = ESP8255_IPD_SetSpeedCallback1;
+		}
+		else if(strstr(buffer, ":SetPID![")){
+							ESP8266_IPD_ReceivedCallback = ESP8255_IPD_SetPIDCallback1;
 		}
 
 		if(ESP8266_IPD_ReceivedCallback!=0){
@@ -512,6 +520,58 @@ void ESP8255_IPD_SetPositionCallback1(char* RxBuffer,uint16_t Length){
 	}
 	uint32_t index = 0;
 	index += sprintf(&Buffer[index], "%s", "SetPosition=OK");
+	index = 0;
+	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
+	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
+	UARTclearBuffer();
+	UARTsetStartIndicatorCallback(ESP8266_IPD_FinalCallback);
+	UARTStartTransfersCB(Buffer2,0);	//because of listen to >
+}
+
+void ESP8255_IPD_SetPIDCallback1(char* RxBuffer,uint16_t Length){
+	int32_t kP;
+	int32_t kI;
+	int32_t kD;
+
+	sscanf(RxBuffer,"+IPD,%*d:SetPID![%d,%d,%d]",&kP,&kI,&kD);
+
+	PID_setParameter(kP, kI, kD);
+
+	mutex_unlock();
+	UARTclearBuffer();
+	void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
+	if(esp8266readyCallback!=0){
+		esp8266readyCallback = 0;
+		esp8266readyCallbacktemp(0);
+
+	}
+	uint32_t index = 0;
+	index += sprintf(&Buffer[index], "%s", "SetPID=OK");
+	index = 0;
+	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
+	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
+	UARTclearBuffer();
+	UARTsetStartIndicatorCallback(ESP8266_IPD_FinalCallback);
+	UARTStartTransfersCB(Buffer2,0);	//because of listen to >
+}
+
+void ESP8255_IPD_SetSpeedCallback1(char* RxBuffer,uint16_t Length){
+	int32_t speedLeft, speedRight;
+
+	sscanf(RxBuffer,"+IPD,%*d:SetSpeed![%d,%d]",&speedLeft,&speedRight);
+
+	PID_setSpeed(speedLeft, speedRight);
+
+	mutex_unlock();
+	UARTclearBuffer();
+	void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
+	if(esp8266readyCallback!=0){
+		esp8266readyCallback = 0;
+		esp8266readyCallbacktemp(0);
+
+	}
+	uint32_t index = 0;
+	index += sprintf(&Buffer[index], "%s", "SetSpeed=OK");
 	index = 0;
 	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
 	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));

@@ -31,7 +31,7 @@ volatile int32_t q0, q1, q2;
  */
 
 static int32_t calculateControlValue(inputValues* input, controlValues* control);
-void PID_setSpeed(inputValues* input, controlValues* control, int32_t target, uint8_t side);
+void PID_setMotor(inputValues* input, controlValues* control, int32_t target, uint8_t side);
 
 /*
  * Public functions
@@ -41,8 +41,8 @@ void PID_trigger(void){
 	odo_status stat = odometry_getStatus();
 	left_input.inputValue = targetValues.targetValueLeft - stat.left.speed;
 	right_input.inputValue = targetValues.targetValueRight - stat.right.speed;
-	PID_setSpeed(&left_input, &left_control, targetValues.targetValueLeft, MOTORLEFT);
-	PID_setSpeed(&right_input, &right_control, targetValues.targetValueRight, MOTORRIGHT);
+	PID_setMotor(&left_input, &left_control, targetValues.targetValueLeft, MOTORLEFT);
+	PID_setMotor(&right_input, &right_control, targetValues.targetValueRight, MOTORRIGHT);
 }
 
 void PID_setParameter(int32_t kP, int32_t kI, int32_t kD){
@@ -60,7 +60,7 @@ void PID_setSpeed(int32_t leftSpeed, int32_t rightSpeed){
  * Private functions
  */
 
-void PID_setSpeed(inputValues* input, controlValues* control, int32_t target, uint8_t side){
+void PID_setMotor(inputValues* input, controlValues* control, int32_t target, uint8_t side){
 	control->controlValue = calculateControlValue(input, control);
 	control->controlValue = motor_setSpeed(side, control->controlValue);
 
