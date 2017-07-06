@@ -27,6 +27,7 @@ controlValues right_control;
 volatile int32_t q0, q1, q2;
 
 static int32_t calculateControlValue(inputValues* input, controlValues* control);
+void PID_setSpeed(inputValues* input, controlValues* control, int32_t target, uint8_t side);
 
 void PID_trigger(void){
 	odo_status stat = odometry_getStatus();
