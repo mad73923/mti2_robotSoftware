@@ -66,7 +66,7 @@ void WlanConnectedToApCallback(uint8_t Error){
 	}
 	else{
 		WLANConnectionStatus = 1;
-		debug_printf("WLAN connection ready! \n\r");
+		//debug_printf("WLAN connection ready! \n\r");
 	}
 }
 

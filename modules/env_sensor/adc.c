@@ -178,8 +178,8 @@ void linearizeADCRawData()
 		back = MAX_DIST;
 	}
 
-	distances_data[arrayIterator-1]=front
-	distances_data[arrayIterator-1+PI_OFFSET]=back
+	distances_data[arrayIterator-1]=front;
+	distances_data[arrayIterator-1+PI_OFFSET]=back;
 
 	setMutexShadow();
 	if(arrayIterator==17){

@@ -185,15 +185,16 @@ void ESP8266ExpectOKCallback(char* buffer, uint16_t length){
 			UARTclearBuffer();
 			ESP8266_OK_Received(buffer, length);
 		}
-	else if(strstr(buffer,"ERROR")){
+	else if(strncmp(buffer,"ERROR",5)==0){
 		mutex_unlock();
+		UARTclearBuffer();
 		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
 		if(esp8266readyCallback!=0){
 			esp8266readyCallback = 0;
 			esp8266readyCallbacktemp(1);
 		}
 	}
-	else if(strstr(buffer,"CLOSED")){
+	else if(strncmp(buffer,"CLOSED",6)==0){
 		mutex_unlock();
 		UARTclearBuffer();
 		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
@@ -203,8 +204,8 @@ void ESP8266ExpectOKCallback(char* buffer, uint16_t length){
 		}
 	}
 	else{
+		//UARTclearBuffer();
 		UARTsetNewLineCallback(ESP8266ExpectOKCallback);
-		UARTclearBuffer();
 	}
 }
 
@@ -318,7 +319,7 @@ void ESP8266ExpectIPDCallback(char* buffer, uint16_t length){
 void ESP8266connectToApCallback1(char* RxBuffer,uint16_t Length){
 	ESP8266_OK_Received = ESP8266connectToApCallback2;
 	UARTclearBuffer();
-	UARTStartTransfersCB("ATE1\r\n",ESP8266ExpectOKCallback);
+	UARTStartTransfersCB("ATE0\r\n",ESP8266ExpectOKCallback);
 }
 
 void ESP8266connectToApCallback2(char* RxBuffer,uint16_t Length){
@@ -336,7 +337,7 @@ void ESP8266connectToApCallback3(char* RxBuffer,uint16_t Length){
 	strcat(Buffer,"\",\"");
 	strcat(Buffer,PW_loc);
 	strcat(Buffer,"\"\r\n");
-	UARTclearBuffer();
+	//UARTclearBuffer();
 	UARTStartTransfersCB(Buffer,ESP8266ExpectOKCallback);
 }
 
