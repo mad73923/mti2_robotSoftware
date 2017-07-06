@@ -13,40 +13,47 @@ volatile int32_t Kp = 1;
 volatile int32_t Ki = 10;
 volatile int32_t Kd;
 
-volatile int32_t targetValueLeft = 500;
+struct {
+	int32_t targetValueLeft;
+	int32_t targetValueRight;
+} targetValues;
 
-volatile int32_t inputValue;
-volatile int32_t inputValueOld;
-volatile int32_t inputValueOld2;
+inputValues left_input;
+inputValues right_input;
 
-volatile int32_t controlValue;
-volatile int32_t controlValueOld;
+controlValues left_control;
+controlValues right_control;
 
 volatile int32_t q0, q1, q2;
 
-static int32_t calculateControlValue(void);
-
+static int32_t calculateControlValue(inputValues* input, controlValues* control);
 
 void PID_trigger(void){
-	controlValue = calculateControlValue();
-	controlValue = motor_setSpeed(MOTORLEFT, controlValue);
-
-	controlValueOld = controlValue;
-	inputValueOld2 = inputValueOld;
-	inputValueOld = inputValue;
+	odo_status stat = odometry_getStatus();
+	left_input.inputValue = targetValues.targetValueLeft - stat.left.speed;
+	right_input.inputValue = targetValues.targetValueRight - stat.right.speed;
+	PID_setSpeed(&left_input, &left_control, targetValues.targetValueLeft, MOTORLEFT);
+	PID_setSpeed(&right_input, &right_control, targetValues.targetValueRight, MOTORRIGHT);
 }
 
-int32_t calculateControlValue(void){
-	odo_status stat = odometry_getStatus();
-	inputValue = targetValueLeft - stat.left.speed;
+void PID_setSpeed(inputValues* input, controlValues* control, int32_t target, uint8_t side){
+	control->controlValue = calculateControlValue(input, control);
+	control->controlValue = motor_setSpeed(side, control->controlValue);
+
+	control->controlValueOld = control->controlValue;
+	control->controlValueOld2 = input->inputValueOld;
+	input->inputValueOld = input->inputValue;
+}
+
+int32_t calculateControlValue(inputValues* input, controlValues* control){
 	q0 = (Kp + (Ki*deltaT) + (Kd/deltaT));
 	q1 = -Kp -2*(Kd/deltaT);
 	q2 = Kd/deltaT;
-	volatile int32_t erg = controlValueOld;
+	volatile int32_t erg = control->controlValueOld;
 
-	erg += (q0*inputValue/100);
-	erg += (q1*inputValueOld/100);
-	erg += (q2*inputValueOld2/100);
+	erg += (q0*input->inputValue/100);
+	erg += (q1*input->inputValueOld/100);
+	erg += (q2*input->inputValueOld2/100);
 
 	return erg;
 }
