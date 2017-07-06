@@ -27,8 +27,7 @@ int main(void){
 
 	}
 	while(1){
-		odometry_updateStatus_async();
-		LL_mDelay(200);
+
 	}
 }
 
