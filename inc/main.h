@@ -13,6 +13,7 @@
 #include "../modules/motor/motor.h"
 #include "../modules/wlan/wlan.h"
 #include "../modules/uid/uid.h"
+#include "../modules/env_sensor/env_sensor.h"
 
 
 #include "../modules/odometry/odometry.h"

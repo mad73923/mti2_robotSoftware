@@ -180,20 +180,21 @@ void ESP8266ExpectWIFI_CONNECTEDCallback(char* buffer, uint16_t length){
 }
 
 void ESP8266ExpectOKCallback(char* buffer, uint16_t length){
-	if(strstr(buffer,"OK")){
+	if(strncmp(buffer,"OK",2)==0){
 	//		debug_printf("ready recieved!\n\r");
 			UARTclearBuffer();
 			ESP8266_OK_Received(buffer, length);
 		}
-	else if(strstr(buffer,"ERROR")){
+	else if(strncmp(buffer,"ERROR",5)==0){
 		mutex_unlock();
+		UARTclearBuffer();
 		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
 		if(esp8266readyCallback!=0){
 			esp8266readyCallback = 0;
 			esp8266readyCallbacktemp(1);
 		}
 	}
-	else if(strstr(buffer,"CLOSED")){
+	else if(strncmp(buffer,"CLOSED",6)==0){
 		mutex_unlock();
 		UARTclearBuffer();
 		void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
@@ -203,8 +204,8 @@ void ESP8266ExpectOKCallback(char* buffer, uint16_t length){
 		}
 	}
 	else{
-		UARTsetNewLineCallback(ESP8266ExpectOKCallback);
 		UARTclearBuffer();
+		UARTsetNewLineCallback(ESP8266ExpectOKCallback);
 	}
 }
 
@@ -336,7 +337,7 @@ void ESP8266connectToApCallback3(char* RxBuffer,uint16_t Length){
 	strcat(Buffer,"\",\"");
 	strcat(Buffer,PW_loc);
 	strcat(Buffer,"\"\r\n");
-	UARTclearBuffer();
+	//UARTclearBuffer();
 	UARTStartTransfersCB(Buffer,ESP8266ExpectOKCallback);
 }
 
@@ -423,15 +424,17 @@ void ESP8266_IPD_FinalCallback(char* RxBuffer, uint16_t Length){
 }
 
 //Beispieldaten
-uint16_t distances[36] = {1,2,3,4,5,4,3,2,1,0,10,20,30,40,50,40,30,20,10,0,100,200,300,400,500,400,300,200,100,0,20,40,60,80,90,100};
-uint16_t numdistances = 36;
 
 void ESP8255_IPD_SendDistancesCallback1(char* RxBuffer,uint16_t Length){
 	uint32_t index = 0;
 	index += sprintf(&Buffer[index], "%s", "ActDistances=[");
-	for(uint16_t i = 0; i<numdistances; i++){
+	setMutexShadow();
+	getDistancesArrayShadow();
+	uint16_t *distances = getDistancesArrayShadow();
+	for(uint16_t i = 0; i<NR_VALUES; i++){
 		index += sprintf(&Buffer[index], "%d,",distances[i]);
 	}
+	resetMutexShadow();
 	index += sprintf(&Buffer[index-1], "]");
 
 	index = 0;
