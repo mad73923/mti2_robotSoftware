@@ -14,6 +14,7 @@
 #include "../modules/odometry/odometry.h"
 #include "../modules/motor/motor.h"
 #include "../modules/env_sensor/env_sensor.h"
+#include "../modules/pid/pid.h"
 
 void ESP8266init();
 void ESP8266connectToAp(const char* SSID,const char* PW,const char* IP, void(*ESP8266readyCallback)(uint8_t));

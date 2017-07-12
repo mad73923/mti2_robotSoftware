@@ -9,12 +9,15 @@
 #define ODOMETRY_ODOMETRY_H_
 
 #include "TLE5012B.h"
+#include "../modules/pid/pid.h"
+
 #include "stm32l4xx_ll_tim.h"
 #include <math.h>
 
 typedef struct{
 	float angle;
 	int16_t revolutions;
+	float speed;
 }wheel;
 
 typedef struct{
