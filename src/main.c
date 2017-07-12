@@ -19,6 +19,7 @@ int main(void){
 	while(WLANgetTCPConnectionStatus()!=1){
 
 	}
+<<<<<<< HEAD
 	odometry_init();
 	motor_timer_init();
 	env_timer_init();

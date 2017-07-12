@@ -59,6 +59,7 @@ void ESP8255_IPD_SendPosCallback1(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SendDistancesCallback1(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SetThrottleCallback1(char* RxBuffer,uint16_t Length);
 void ESP8255_IPD_SetPositionCallback1(char* RxBuffer,uint16_t Length);
+void ESP8255_IPD_ChangeScanmodeCallback1(char* RxBuffer,uint16_t Length);
 
 void ESP8266_IPD_SetHornCallback1(char* RxBuffer, uint16_t Length);
 
@@ -265,6 +266,12 @@ void ESP8266ExpectIPDCallback(char* buffer, uint16_t length){
 			ESP8266_IPD_ReceivedCallback = ESP8255_IPD_SendDistancesCallback1;
 			UARTclearBuffer();
 		}
+
+		else if(strncmp(buffer,"+IPD,16:ChangeScanmode!",23)==0){
+			ESP8266_IPD_ReceivedCallback = ESP8255_IPD_ChangeScanmodeCallback1;
+			UARTclearBuffer();
+		}
+
 		else if(strstr(buffer,":SetThrottle![")){
 			ESP8266_IPD_ReceivedCallback = ESP8255_IPD_SetThrottleCallback1;
 		}
@@ -319,7 +326,7 @@ void ESP8266ExpectIPDCallback(char* buffer, uint16_t length){
 void ESP8266connectToApCallback1(char* RxBuffer,uint16_t Length){
 	ESP8266_OK_Received = ESP8266connectToApCallback2;
 	UARTclearBuffer();
-	UARTStartTransfersCB("ATE1\r\n",ESP8266ExpectOKCallback);
+	UARTStartTransfersCB("ATE0\r\n",ESP8266ExpectOKCallback);
 }
 
 void ESP8266connectToApCallback2(char* RxBuffer,uint16_t Length){
@@ -515,6 +522,31 @@ void ESP8255_IPD_SetPositionCallback1(char* RxBuffer,uint16_t Length){
 	}
 	uint32_t index = 0;
 	index += sprintf(&Buffer[index], "%s", "SetPosition=OK");
+	index = 0;
+	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
+	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
+	UARTclearBuffer();
+	UARTsetStartIndicatorCallback(ESP8266_IPD_FinalCallback);
+	UARTStartTransfersCB(Buffer2,0);	//because of listen to >
+}
+
+void ESP8255_IPD_ChangeScanmodeCallback1(char* RxBuffer,uint16_t Length){
+	if(1){			//wenn an dann ausschalten
+
+	}
+	else{			//wenn aus dann anschalten
+
+	}
+	mutex_unlock();
+	UARTclearBuffer();
+	void(*esp8266readyCallbacktemp)(uint8_t)=esp8266readyCallback;
+	if(esp8266readyCallback!=0){
+		esp8266readyCallback = 0;
+		esp8266readyCallbacktemp(0);
+
+	}
+	uint32_t index = 0;
+	index += sprintf(&Buffer[index], "%s", "ChangeScanmode=OK");
 	index = 0;
 	index += sprintf(&Buffer2[index], "%s", "AT+CIPSEND=");
 	index += sprintf(&Buffer2[index], "%d\r\n", strlen(Buffer));
