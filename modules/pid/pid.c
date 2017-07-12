@@ -9,9 +9,9 @@
 
 volatile int32_t deltaT = 1;
 
-volatile int32_t Kp = 1;
-volatile int32_t Ki = 10;
-volatile int32_t Kd;
+volatile int32_t Kp = 30;
+volatile int32_t Ki = 20;
+volatile int32_t Kd = 8;
 
 struct {
 	int32_t targetValueLeft;
