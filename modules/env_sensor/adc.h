@@ -51,6 +51,7 @@ char getCurrentDistanceArrayIndex();
 void linearizeADCRawData();
 void setMutexShadow();
 void resetMutexShadow();
+uint8_t getEnvFlag();
 
 
 /* Private Function prototypes */

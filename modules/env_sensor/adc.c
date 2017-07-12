@@ -263,3 +263,7 @@ char getCurrentDistanceArrayIndex()
 {
 	return arrayIterator;
 }
+
+uint8_t getEnvFlag(){
+	return startEnvFlag;
+}
