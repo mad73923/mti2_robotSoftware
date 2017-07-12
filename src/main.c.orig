@@ -19,6 +19,7 @@ int main(void){
 	while(WLANgetTCPConnectionStatus()!=1){
 
 	}
+<<<<<<< HEAD
 	odometry_init();
 	motor_timer_init();
 	env_timer_init();
@@ -27,6 +28,13 @@ int main(void){
 
 
 
+||||||| merged common ancestors
+=======
+	odometry_init();
+	motor_timer_init();
+
+
+>>>>>>> WLAN_America_first
 	while(1){
 
 	}

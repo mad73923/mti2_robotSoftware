@@ -145,8 +145,10 @@ void ADC_INTERRUPT_HANDLER()
 
 				if(arrayIterator==PI_OFFSET){
 					arrayIterator = 0;
-				}else if(arrayIterator == 1){
+					servo_set_angle(0);
 					delay = -10;
+//				}else if(arrayIterator == 1){
+//					delay = -10;
 				}
 			}
 		}

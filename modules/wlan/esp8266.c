@@ -531,11 +531,11 @@ void ESP8255_IPD_SetPositionCallback1(char* RxBuffer,uint16_t Length){
 }
 
 void ESP8255_IPD_ChangeScanmodeCallback1(char* RxBuffer,uint16_t Length){
-	if(1){			//wenn an dann ausschalten
-
+	if(getEnvFlag()){			//wenn an dann ausschalten
+		stop_env_data_collector();
 	}
 	else{			//wenn aus dann anschalten
-
+		start_env_data_collector();
 	}
 	mutex_unlock();
 	UARTclearBuffer();
