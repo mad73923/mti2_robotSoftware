@@ -83,6 +83,7 @@ void WlanConnectedToTCPcallback(uint8_t Error){
 	else{
 		TCPConnectionStatus = 1;
 		debug_printf("TCP connection ready! \n\r");
+		start_env_data_collector();
 		WLANstartTCPlistener();
 	}
 }
@@ -98,6 +99,7 @@ void WlanHandledTCPmessageCallback(uint8_t Error){
 	else if(Error==2){
 		debug_printf("TCP-Connection destroyed! \n\r");
 		TCPConnectionStatus = 0;
+		stop_env_data_collector();
 		WLANreconnectToTCPserver();
 	}
 	else if(Error==3){

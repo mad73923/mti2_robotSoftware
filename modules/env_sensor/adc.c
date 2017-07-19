@@ -8,7 +8,7 @@
 
 /* Private variables */
 __IO char arrayIterator = 0;
-__IO int8_t counterDelay = 0;
+__IO int8_t delay = 0;
 /* Linearization Constants */
 __IO const float	a = -1.3838;
 __IO const float	b = 2.8372;
@@ -37,7 +37,7 @@ void adc_init(void)
 	LL_GPIO_EnablePinAnalogControl(ADC_PORT, ADC_PIN2);
 
 	/* Configure NVIC to enable ADC1 interruptions */
-	NVIC_SetPriority(ADC_INTERRUPT, 14);
+	NVIC_SetPriority(ADC_INTERRUPT, ADC_PRIORITY);
 	NVIC_EnableIRQ(ADC_INTERRUPT);
 
 	/* Enable ADC clock (core clock) */
@@ -51,6 +51,7 @@ void adc_init(void)
 
 	if ((LL_ADC_IsEnabled(ADC_NR) == 0) || (LL_ADC_REG_IsConversionOngoing(ADC_NR) == 0))
 	{
+
 		/* Set ADC group regular trigger source */
 		LL_ADC_REG_SetTriggerSource(ADC_NR, LL_ADC_REG_TRIG_SOFTWARE);
 
@@ -61,11 +62,11 @@ void adc_init(void)
 		LL_ADC_REG_SetOverrun(ADC_NR, LL_ADC_REG_OVR_DATA_OVERWRITTEN);
 
 		/* Set ADC group regular sequencer length and scan direction */
-		LL_ADC_REG_SetSequencerLength(ADC_NR, LL_ADC_REG_SEQ_SCAN_ENABLE_2RANKS);
+		LL_ADC_REG_SetSequencerLength(ADC_NR, LL_ADC_REG_SEQ_SCAN_DISABLE);
 
 		/* Set ADC group regular sequence: channel on the selected sequence rank. */
 		LL_ADC_REG_SetSequencerRanks(ADC_NR, LL_ADC_REG_RANK_1, ADC_CHANNEL_1);
-		LL_ADC_REG_SetSequencerRanks(ADC_NR, LL_ADC_REG_RANK_2, ADC_CHANNEL_2);
+		//LL_ADC_REG_SetSequencerRanks(ADC_NR, LL_ADC_REG_RANK_2, ADC_CHANNEL_2);
 	}
 
 	if ((LL_ADC_IsEnabled(ADC_NR) == 0) || ((LL_ADC_REG_IsConversionOngoing(ADC_NR) == 0) && (LL_ADC_INJ_IsConversionOngoing(ADC_NR) == 0)))
@@ -134,33 +135,39 @@ void ADC_INTERRUPT_HANDLER()
 	/* With this formula, the internal ADC-value is converted into mm-distance */
 	/* The frontFlag is to differentiate between front and back-sensor-data. */
 	analogRawData[frontFlag] = LL_ADC_REG_ReadConversionData12(ADC_NR);
-	frontFlag = !frontFlag;
 
 	 /* To start this function block the corresponding function in env_sensor.c has to be called.*/
 	if(startEnvFlag){
+		if(frontFlag){
+			if(delay >=0){
+				servo_set_angle(arrayIterator++);
+				linearizeADCRawData();
 
-		if(counterDelay == 1){
-
-			servo_set_angle(arrayIterator++);
-			linearizeADCRawData();
-
-			if(arrayIterator==PI_OFFSET){
-				arrayIterator = 0;
-				counterDelay = -1;
-			}else if(arrayIterator == 1){
-				counterDelay = -10;
-			}else{
-				counterDelay=-1;
+				if(arrayIterator==PI_OFFSET){
+					arrayIterator = 0;
+					servo_set_angle(0);
+					delay = -10;
+//				}else if(arrayIterator == 1){
+//					delay = -10;
+				}
 			}
-
 		}
-		counterDelay++;
-
+		delay++;
 	}
+
+	if(!frontFlag){
+		LL_ADC_REG_SetSequencerRanks(ADC_NR, LL_ADC_REG_RANK_1, ADC_CHANNEL_2);
+		LL_ADC_REG_StartConversion(ADC_NR);
+	}
+	else{
+		LL_ADC_REG_SetSequencerRanks(ADC_NR, LL_ADC_REG_RANK_1, ADC_CHANNEL_1);
+	}
+
+	frontFlag = !frontFlag;
 
 }
 
-/**
+/*
   * @brief  This function linearizes the ADC-Raw-Data and puts the
   * 		values into distances_data.
   * @param  None
@@ -182,7 +189,7 @@ void linearizeADCRawData()
 	distances_data[arrayIterator-1+PI_OFFSET]=back;
 
 	setMutexShadow();
-	if(arrayIterator==17){
+	if(arrayIterator==PI_OFFSET){
 		for(int i = 0; i < NR_VALUES; i++){
 			distances_shadow[i]=distances_data[i];
 		}
@@ -257,4 +264,8 @@ uint16_t* getDistancesArrayShadow()
 char getCurrentDistanceArrayIndex()
 {
 	return arrayIterator;
+}
+
+uint8_t getEnvFlag(){
+	return startEnvFlag;
 }

@@ -24,12 +24,11 @@ int main(void){
 	env_timer_init();
 	servo_timer_init();
 	adc_init();
-	start_env_data_collector();
+
 
 
 	while(1){
-		odo_status stat = odometry_getStatus();
-		debug_printf("speed: left: %f right: %f\n", stat.left.speed, stat.right.speed);
+
 	}
 }
 

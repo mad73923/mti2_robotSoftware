@@ -29,10 +29,11 @@
 #define ADC_PIN2							LL_GPIO_PIN_1
 #define ADC_INTERRUPT						ADC1_2_IRQn
 #define ADC_INTERRUPT_HANDLER()				ADC1_2_IRQHandler()
+#define ADC_PRIORITY						14
 #define PORT_CLK_ENABLE						LL_AHB2_GRP1_PERIPH_GPIOA
 #define NR_VALUES 36
 #define PI_OFFSET 18
-#define MAX_DIST  900
+#define MAX_DIST  1000
 /* Struct distValues in mm */
 struct distValues {
 	uint16_t front;
@@ -50,6 +51,7 @@ char getCurrentDistanceArrayIndex();
 void linearizeADCRawData();
 void setMutexShadow();
 void resetMutexShadow();
+uint8_t getEnvFlag();
 
 
 /* Private Function prototypes */
